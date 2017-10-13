@@ -23,13 +23,13 @@ PHP Lambda for handling basic SIP2 refile communications with an Integrated Libr
 ## Requirements
 
 * Node.js >=6.0
-* PHP >=7.0 
+* PHP >=7.0
   * [pdo_pdgsql](http://php.net/manual/en/ref.pdo-pgsql.php)
 
 Homebrew is highly recommended for PHP:
   * `brew install php71`
   * `brew install php71-pdo-pgsql`
-  
+
 ## Installation
 
 1. Clone the repo.
@@ -54,17 +54,19 @@ Various files are used to configure and deploy the Lambda.
 
 `.env` is used *locally* for two purposes:
 
-1. By `node-lambda` for deploying to and configuring Lambda in *all* environments. 
-   * You should use this file to configure the common settings for the Lambda 
-   (e.g. timeout, role, etc.) and include AWS credentials to deploy the Lambda. 
+1. By `node-lambda` for deploying to and configuring Lambda in *all* environments.
+   * You should use this file to configure the common settings for the Lambda
+   (e.g. timeout, role, etc.) and include AWS credentials to deploy the Lambda.
 2. To set local environment variables so the Lambda can be run and tested in a local environment.
    These parameters are ultimately set by the [var environment files](#var_environment) when the Lambda is deployed.
+
+Use `npm run build-node-lambda-env` command to generate the proper `./.env`
 
 ### package.json
 
 Configures `npm run` deployment commands for each environment and sets the proper AWS Lambda VPC and
 security group.
- 
+
 ~~~~
 "scripts": {
   "deploy-qa": "node-lambda deploy -e qa -f config/deploy_qa.env -S config/event_sources_qa.json -b subnet-<id> -g sg-<id> -p <profile>",
@@ -91,7 +93,7 @@ Configures Lambda event sources (triggers) specific to each environment.
 To use `node-lambda` to process the sample API Gateway event in `event.json`, run:
 
 ~~~~
-node-lambda run
+npm run local-run
 ~~~~
 
 ### Run as a Web Server
