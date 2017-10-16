@@ -27,6 +27,12 @@ class RefileRequest extends NewRefileRequest implements ReadInterface
     public $id;
 
     /**
+     * @SWG\Property(example="991873slx938")
+     * @var string
+     */
+    public $jobId;
+
+    /**
      * @SWG\Property(example=false)
      * @var bool
      */
@@ -107,6 +113,22 @@ class RefileRequest extends NewRefileRequest implements ReadInterface
     public function setSuccess($success)
     {
         $this->success = (bool) $success;
+    }
+
+    /**
+     * @return string
+     */
+    public function getJobId()
+    {
+        return $this->jobId;
+    }
+
+    /**
+     * @param string $jobId
+     */
+    public function setJobId($jobId)
+    {
+        $this->jobId = $jobId;
     }
 
     /**

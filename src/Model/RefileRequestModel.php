@@ -15,12 +15,6 @@ class RefileRequestModel extends Model
     public $itemBarcode;
 
     /**
-     * @SWG\Property(example="991873slx938")
-     * @var string
-     */
-    public $jobId;
-
-    /**
      * @return string
      */
     public function getItemBarcode()
@@ -34,22 +28,5 @@ class RefileRequestModel extends Model
     public function setItemBarcode($itemBarcode)
     {
         $this->itemBarcode = $itemBarcode;
-    }
-
-
-    /**
-     * @return string
-     */
-    public function getJobId()
-    {
-        return $this->jobId;
-    }
-
-    /**
-     * @param string $jobId
-     */
-    public function setJobId($jobId)
-    {
-        $this->jobId = $jobId;
     }
 }
