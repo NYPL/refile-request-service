@@ -128,7 +128,7 @@ To run the newly created docker image locally, execute the following command:
 
 ~~~~
 docker run -it -p {EXTERNAL_PORT}:8888 --rm --name {NAME_OF_CONTAINER} {NAME_OF_IMAGE_TO_RUN}
-Ex: docker run -it -p 8888:888 --rm --name refile-service-container refile-service-image
+Ex: docker run -it -p 8888:8888 --rm --name refile-service-container refile-service-image
 ~~~~
 
 #### Publishing docker image
