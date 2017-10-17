@@ -17,6 +17,8 @@ try {
 
     $service->get('/docs/refile-requests', Swagger::class);
 
+    $service->post('/api/v0.1/recap/refile-requests', RefileRequestController::class . ':createRefileRequest');
+
     $service->run();
 } catch (\Exception $exception) {
     ErrorHandler::processShutdownError($exception->getMessage(), $exception);
