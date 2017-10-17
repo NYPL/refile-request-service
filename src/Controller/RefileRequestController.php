@@ -70,6 +70,12 @@ class RefileRequestController extends ServiceController
 
             $refileRequest = new RefileRequest($data);
 
+            try {
+                $refileRequest->validatePostData();
+            } catch (APIException $exception) {
+                $this->invalidRequestResponse($exception);
+            }
+
             $refileRequest->create();
 
             APILogger::addNotice('Beginning refile of item barcode ' . $data['itemBarcode']);
