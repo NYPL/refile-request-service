@@ -2,6 +2,7 @@
 namespace NYPL\Services\Controller;
 
 use NYPL\Services\ItemClient;
+use NYPL\Services\JobService;
 use NYPL\Services\Model\RefileRequest\RefileRequest;
 use NYPL\Services\Model\Response\RefileRequestResponse;
 use NYPL\Services\ServiceController;
@@ -46,12 +47,12 @@ class RefileRequestController extends ServiceController
      *     @SWG\Response(
      *         response="404",
      *         description="Not found",
-     *         @SWG\Schema(ref="#/definitions/RefileRequestErrorResponse")
+     *         @SWG\Schema(ref="#/definitions/ErrorResponse")
      *     ),
      *     @SWG\Response(
      *         response="500",
      *         description="Generic server error",
-     *         @SWG\Schema(ref="#/definitions/RefileRequestErrorResponse")
+     *         @SWG\Schema(ref="#/definitions/ErrorResponse")
      *     ),
      *     security={
      *         {
@@ -67,6 +68,7 @@ class RefileRequestController extends ServiceController
     {
         try {
             $data = $this->getRequest()->getParsedBody();
+            $data['jobId'] = JobService::generateJobId($this->isUseJobService());
 
             $refileRequest = new RefileRequest($data);
 
@@ -74,8 +76,12 @@ class RefileRequestController extends ServiceController
 
             APILogger::addNotice('Beginning refile of item barcode ' . $data['itemBarcode']);
 
-            APILogger::addNotice('Getting item record');
+            if ($this->isUseJobService()) {
+                APILogger::addDebug('Initiating job.', ['jobID' => $refileRequest->getJobId()]);
+                JobService::beginJob($refileRequest);
+            }
 
+            APILogger::addNotice('Getting item record');
             $itemClient = new ItemClient();
 
             $response = $itemClient->get('items?barcode=' . $data['itemBarcode']);
@@ -103,6 +109,15 @@ class RefileRequestController extends ServiceController
 
             APILogger::addNotice('Received SIP2 message', $result);
 
+            $refileRequest->update(
+                ['success' => true]
+            );
+
+            if ($this->isUseJobService()) {
+                APILogger::addDebug('Updating an existing job.', ['jobID' => $refileRequest->getJobId()]);
+                JobService::finishJob($refileRequest);
+            }
+
             return $this->getResponse()->withJson(
                 new RefileRequestResponse($refileRequest)
             );
@@ -110,11 +125,11 @@ class RefileRequestController extends ServiceController
         } catch (\Exception $exception) {
             APILogger::addError('Refile SIP2 request failed: ' . $exception->getMessage());
             return $this->getResponse()->withJson(new ErrorResponse(
-                400,
+                500,
                 'sip2-checkin-error',
-                'SIP2 exception thrown',
+                'SIP2 connection error',
                 $exception
-            ))->withStatus(400);
+            ))->withStatus(500);
         }
     }
 }
