@@ -207,7 +207,7 @@ class JobService
         );
 
         self::getJobClient()->startJob(
-            new Job(['id' => $refileRequest->getRefileJobId()]),
+            new Job(['id' => $refileRequest->getJobId()]),
             self::getJobStatus()
         );
     }
@@ -229,7 +229,7 @@ class JobService
             );
 
             self::getJobClient()->success(
-                new Job(['id' => $refileRequest->getRefileJobId()]),
+                new Job(['id' => $refileRequest->getJobId()]),
                 self::getJobStatusSuccess()
             );
         } catch (\Exception $exception) {
