@@ -91,14 +91,14 @@ class RefileRequestController extends ServiceController
 
             $sip2Client = new SIP2Client();
 
-            $checkinResponse = $sip2Client->getSip2Client()->msgCheckin(
+            $refileResponse = $sip2Client->getSip2Client()->msgCheckin(
                 $item['barcode'],
                 time(),
                 $item['location']['code']
             );
 
             $result = $sip2Client->getSip2Client()->parseCheckinResponse(
-                $sip2Client->getSip2Client()->get_message($checkinResponse)
+                $sip2Client->getSip2Client()->get_message($refileResponse)
             );
 
             APILogger::addNotice('Received SIP2 message', $result);
