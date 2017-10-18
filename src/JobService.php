@@ -247,7 +247,7 @@ class JobService
     {
         $jobNotice = new JobNoticeCreated();
         $jobNotice->setData([
-            'jobId' => $data['refileJobId']
+            'jobId' => $data['jobId']
         ]);
         $jobNotice->setText($notice);
         APILogger::addDebug('Job notice created.', $data);
