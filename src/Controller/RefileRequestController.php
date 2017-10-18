@@ -9,6 +9,7 @@ use NYPL\Services\ServiceController;
 use NYPL\Services\SIP2Client;
 use NYPL\Starter\APIException;
 use NYPL\Starter\APILogger;
+use NYPL\Starter\Filter;
 use NYPL\Starter\Model\Response\ErrorResponse;
 use Slim\Http\Response;
 
@@ -115,6 +116,8 @@ class RefileRequestController extends ServiceController
 
             APILogger::addNotice('Received SIP2 message', $result);
 
+            $refileRequest->addFilter(new Filter('id', $refileRequest->getId()));
+            $refileRequest->read();
             $refileRequest->update(
                 ['success' => true]
             );
