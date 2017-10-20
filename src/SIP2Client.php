@@ -2,6 +2,7 @@
 namespace NYPL\Services;
 
 use NYPL\Starter\APIException;
+use NYPL\Starter\APILogger;
 use NYPL\Starter\Config;
 use PHPUnit\Framework\Exception;
 use sip2;
@@ -43,20 +44,22 @@ class SIP2Client
     {
         $sipClient = new sip2();
 
-        try {
-            $sipClient->hostname = Config::get('SIP2_HOSTNAME');
-            $sipClient->port = Config::get('SIP2_PORT');
+        $sipClient->hostname = Config::get('SIP2_HOSTNAME');
+        $sipClient->port = Config::get('SIP2_PORT');
 
-            $sipClient->connect();
-
-            $sipClient->AC = Config::get('SIP2_TERMINAL_PASSWORD', null, true);
-
-            $this->setSip2Client($sipClient);
-        } catch (\Exception $exception) {
+        if (!$sipClient->connect()) {
             throw new APIException(
-                $exception->getMessage(),
-                $exception
+                'SIP2 socket connection error. Please check your configuration.',
+                [],
+                0,
+                null,
+                500
             );
         }
+
+        $sipClient->UIDalgorithm = Config::get('SIP2_LOGIN', null, true);
+        $sipClient->AC = Config::get('SIP2_TERMINAL_PASSWORD', null, true);
+
+        $this->setSip2Client($sipClient);
     }
 }

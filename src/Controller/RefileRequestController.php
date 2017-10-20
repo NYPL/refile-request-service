@@ -1,6 +1,7 @@
 <?php
 namespace NYPL\Services\Controller;
 
+use GuzzleHttp\Exception\RequestException;
 use NYPL\Services\ItemClient;
 use NYPL\Services\JobService;
 use NYPL\Services\Model\RefileRequest\RefileRequest;
@@ -20,7 +21,6 @@ use Slim\Http\Response;
  */
 class RefileRequestController extends ServiceController
 {
-
     /**
      * @SWG\Post(
      *     path="/v0.1/recap/refile-requests",
@@ -90,15 +90,13 @@ class RefileRequestController extends ServiceController
 
             APILogger::addNotice('Getting item record');
             $itemClient = new ItemClient();
-
-            $response = $itemClient->get('items?barcode=' . $data['itemBarcode']);
-
-            $item = json_decode($response->getBody(), true)['data'][0];
+            $itemResponse = $itemClient->get('items?barcode=' . $data['itemBarcode']);
+            $item = json_decode($itemResponse->getBody(), true)['data'][0];
 
             APILogger::addNotice('Received item record', $item);
 
             APILogger::addNotice('Sending SIP2 call', [
-                'barcode' => $item['barcode'],
+                'barcode'      => $item['barcode'],
                 'locationCode' => $item['location']['code']
             ]);
 
@@ -131,12 +129,20 @@ class RefileRequestController extends ServiceController
                 new RefileRequestResponse($refileRequest)
             );
 
+        } catch (RequestException $exception) {
+            APILogger::addError('Guzzle request exception:' . $exception->getMessage());
+            return $this->getResponse()->withJson(new ErrorResponse(
+                $exception->getCode(),
+                'refile-client-error',
+                'Request exception: ' . $exception->getMessage(),
+                $exception
+            ))->withStatus($exception->getCode());
         } catch (\Exception $exception) {
-            APILogger::addError('Refile SIP2 request failed: ' . $exception->getMessage());
+            APILogger::addError('Refile request failed: ' . $exception->getMessage());
             return $this->getResponse()->withJson(new ErrorResponse(
                 500,
-                'sip2-checkin-error',
-                'SIP2 connection error',
+                'refile-server-error',
+                $exception->getMessage(),
                 $exception
             ))->withStatus(500);
         }
