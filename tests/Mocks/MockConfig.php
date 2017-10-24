@@ -7,7 +7,7 @@ use NYPL\Starter\Config;
 
 class MockConfig extends Config
 {
-    const ENVIRONMENT_FILE = '.env.sample';
+    const ENVIRONMENT_FILE = '.env';
     const CONFIG_FILE = 'mock.env';
 
     protected static $initialized = false;
