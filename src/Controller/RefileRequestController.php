@@ -114,10 +114,17 @@ class RefileRequestController extends ServiceController
 
             APILogger::addNotice('Received SIP2 message', $result);
 
+            $successFlag = true;
+            // Log a failed SIP2 status change without terminating the request.
+            if ($result['fixed']['Alert'] == 'Y') {
+                APILogger::addError('Failed to change status to AVAILABLE');
+                $successFlag = false;
+            }
+
             $refileRequest->addFilter(new Filter('id', $refileRequest->getId()));
             $refileRequest->read();
             $refileRequest->update(
-                ['success' => true]
+                ['success' => $successFlag]
             );
 
             if ($this->isUseJobService()) {

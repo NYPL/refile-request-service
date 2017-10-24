@@ -2,9 +2,7 @@
 namespace NYPL\Services;
 
 use NYPL\Starter\APIException;
-use NYPL\Starter\APILogger;
 use NYPL\Starter\Config;
-use PHPUnit\Framework\Exception;
 use sip2;
 
 class SIP2Client
@@ -38,7 +36,6 @@ class SIP2Client
 
     /**
      * @throws APIException
-     * @return \sip2
      */
     protected function initializeSip2Client()
     {
@@ -49,7 +46,7 @@ class SIP2Client
 
         if (!$sipClient->connect()) {
             throw new APIException(
-                'SIP2 socket connection error. Please check your configuration.',
+                'SIP2 connection failure. Please check your configuration.',
                 [],
                 0,
                 null,
