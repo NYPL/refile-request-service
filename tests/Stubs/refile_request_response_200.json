@@ -1,0 +1,62 @@
+{
+  "fixed": {
+    "Ok": "1",
+    "Resensitize": "Y",
+    "Magnetic": "N",
+    "Alert": "Y",
+    "TransactionDate": "201310190000145045"
+  },
+  "variable": {
+    "Raw": [
+      "AOnypl ",
+      "AB3343311222444",
+      "AQrc2ma",
+      "AJAn annotated bibliography of biomedical computer applications.",
+      "CK000",
+      "AFItem was set in transit to permanent location.",
+      "CSJXE 71-1 ",
+      "CRrc2ma",
+      "CTrc2ma",
+      "CV04",
+      "CY",
+      "DA",
+      "AY0"
+    ],
+    "AO": [
+      "nypl "
+    ],
+    "AB": [
+      "3343311222444"
+    ],
+    "AQ": [
+      "rc2ma"
+    ],
+    "AJ": [
+      "An annotated bibliography of biomedical computer applications."
+    ],
+    "CK": [
+      "000"
+    ],
+    "AF": [
+      "Item was set in transit to permanent location."
+    ],
+    "CS": [
+      "JXE 71-1 "
+    ],
+    "CR": [
+      "rc2ma"
+    ],
+    "CT": [
+      "rc2ma"
+    ],
+    "CV": [
+      "04"
+    ],
+    "AY": [
+      "0"
+    ],
+    "AZ": [
+      "B71F\r"
+    ]
+  }
+}
