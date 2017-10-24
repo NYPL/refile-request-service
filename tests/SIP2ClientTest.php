@@ -10,7 +10,7 @@ class SIP2ClientTest extends TestCase
 
     public function setUp()
     {
-        MockConfig::initialize(__DIR__ . '/../');
+        MockConfig::initialize(__DIR__ . '/Mocks/');
     }
 
     public function tearDown()

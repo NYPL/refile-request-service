@@ -13,7 +13,7 @@ class RefileRequestControllerTest extends TestCase
     public function setUp()
     {
         parent::setUp();
-        MockConfig::initialize(__DIR__ . '/../../');
+        MockConfig::initialize(__DIR__ . '/../Mocks/');
         MockService::setMockContainer();
         $this->mockContainer = MockService::$mockContainer;
 
