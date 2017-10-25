@@ -90,7 +90,7 @@ class JobServiceTest extends TestCase
             $fakeService::$jobNotice
         );
         self::assertSame($notice, $fakeService::getJobNotice()->getText());
-        self::assertArrayHasKey('itemBarcode', $fakeService::getJobNotice()->getData());
+        self::assertArrayHasKey('id', $fakeService::getJobNotice()->getData());
     }
 
     /**
@@ -124,7 +124,9 @@ class JobServiceTest extends TestCase
         $fakeService = $this->fakeJobService;
         $fakeService::finishJob($refileRequest);
 
-        self::assertContains('99999', implode(', ', $fakeService::getJobNotice()->getData()));
+        // Test the data array created.
+        self::assertContains('555', implode(', ', $fakeService::getJobNotice()->getData()));
+        // Test if the same data was logged.
         self::assertContains('555', $fakeService::getJobNotice()->getText());
 
     }
