@@ -113,3 +113,25 @@ Create a Swagger route to generate Swagger specification documentation:
 ~~~~
 $service->get("/docs", SwaggerGenerator::class);
 ~~~~
+<<<<<<< Updated upstream
+=======
+
+### Docker Integration
+
+To build a docker image run the following command in terminal at the root directory:
+
+~~~~
+docker build -t {NAME_OF_IMAGE} .
+Ex: docker build -t refile-service-image .
+~~~~
+> This will build a docker image installing all PHP dependencies and exporting the 8888 port for public use outside of the container
+
+To run the newly created docker image locally, execute the following command:
+
+~~~~
+docker run -it -p {EXTERNAL_PORT}:8888 --rm --name {NAME_OF_CONTAINER} {NAME_OF_IMAGE_TO_RUN}
+Ex: docker run -it -p 8888:8888 --rm --name refile-service-container refile-service-image
+~~~~
+
+#### Publishing docker image
+... coming soon
