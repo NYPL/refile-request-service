@@ -67,24 +67,24 @@ class RefileRequestController extends ServiceController
      */
     public function createRefileRequest()
     {
-        $data = $this->getRequest()->getParsedBody();
-        $data['jobId'] = JobService::generateJobId($this->isUseJobService());
-
-        $refileRequest = new RefileRequest($data);
-
         try {
-            $refileRequest->validatePostData();
-        } catch (APIException $exception) {
-            $this->invalidRequestResponse($exception);
-        }
+            $data = $this->getRequest()->getParsedBody();
+            $data['jobId'] = JobService::generateJobId($this->isUseJobService());
 
-        $refileRequest->create();
+            $refileRequest = new RefileRequest($data);
 
-        $this->sendJobServiceMessages($refileRequest);
+            try {
+                $refileRequest->validatePostData();
+            } catch (APIException $exception) {
+                return $this->invalidRequestResponse($exception);
+            }
 
-        APILogger::addDebug('Preparing refile request of item barcode ' . $data['itemBarcode']);
+            $refileRequest->create();
 
-        try {
+            APILogger::addDebug('Preparing refile request of item barcode ' . $data['itemBarcode']);
+
+            $this->sendJobServiceMessages($refileRequest);
+
             APILogger::addDebug('Getting item record');
             $itemClient = new ItemClient();
             $itemResponse = $itemClient->get('items?barcode=' . $data['itemBarcode']);
@@ -122,15 +122,27 @@ class RefileRequestController extends ServiceController
                 ['success' => true]
             );
 
+            return $this->getResponse()->withJson(
+                new RefileRequestResponse($refileRequest)
+            );
+
         } catch (RequestException $exception) {
             APILogger::addError('Item Client exception: ' . $exception->getMessage());
+            return $this->getResponse()->withJson(new ErrorResponse(
+                $exception->getCode(),
+                'refile-client-error',
+                $exception->getMessage(),
+                null
+            ))->withStatus($exception->getCode());
         } catch (\Exception $exception) {
             APILogger::addError('Refile request failed: ' . $exception->getMessage());
+            return $this->getResponse()->withJson(new ErrorResponse(
+                500,
+                'refile-server-error',
+                $exception->getMessage(),
+                $exception
+            ))->withStatus(500);
         }
-
-        return $this->getResponse()->withJson(
-            new RefileRequestResponse($refileRequest)
-        );
     }
 
     /**

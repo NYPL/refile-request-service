@@ -2,8 +2,12 @@
 namespace NYPL\Test\Controller;
 
 use NYPL\Services\Controller\RefileRequestController;
+use NYPL\Services\Model\RefileRequest\RefileRequest;
+use NYPL\Services\Model\Response\RefileRequestResponse;
 use NYPL\Services\Test\Mocks\MockConfig;
 use NYPL\Services\Test\Mocks\MockService;
+use NYPL\Starter\APIException;
+use NYPL\Starter\APILogger;
 use PHPUnit\Framework\TestCase;
 
 class RefileRequestControllerTest extends TestCase
@@ -30,9 +34,29 @@ class RefileRequestControllerTest extends TestCase
 
             public function createRefileRequest()
             {
-                return parent::createRefileRequest();
+                $data = json_decode(file_get_contents(__DIR__ . '/../Stubs/validRefileRequest.json'), true);
+
+                $refileRequest = new RefileRequest($data);
+
+                return $this->getResponse()->withJson(
+                    new RefileRequestResponse($refileRequest)
+                );
             }
-        };
+
+            public function invalidRefileRequest()
+            {
+                $data = json_decode(file_get_contents(__DIR__ . '/../Stubs/invalidRefileRequest.json'), true);
+
+                $refileRequest = new RefileRequest($data);
+
+                try {
+                    $refileRequest->validatePostData();
+                } catch (APIException $exception) {
+                    APILogger::addDebug($exception->getMessage());
+                    return $this->invalidRequestResponse($exception);
+                }
+            }
+       };
     }
 
     /**
@@ -45,17 +69,19 @@ class RefileRequestControllerTest extends TestCase
         $response = $controller->createRefileRequest();
 
         self::assertInstanceOf('Slim\Http\Response', $response);
+        self::assertSame(200, $response->getStatusCode());
     }
 
     /**
      * @covers NYPL\Services\Controller\RefileRequestController::createRefileRequest()
      */
-    public function testMisconfigurationThrowsException()
+    public function testInvalidRequestReturns400()
     {
         $controller = $this->fakeRefileRequestController;
 
-        $response = $controller->createRefileRequest();
+        $response = $controller->invalidRefileRequest();
 
-        self::assertSame(500, $response->getStatusCode());
+        self::assertInstanceOf('Slim\Http\Response', $response);
+        self::assertSame(400, $response->getStatusCode());
     }
 }
