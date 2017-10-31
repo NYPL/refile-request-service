@@ -67,35 +67,32 @@ class RefileRequestController extends ServiceController
      */
     public function createRefileRequest()
     {
+        $data = $this->getRequest()->getParsedBody();
+        $data['jobId'] = JobService::generateJobId($this->isUseJobService());
+
+        $refileRequest = new RefileRequest($data);
+
         try {
-            $data = $this->getRequest()->getParsedBody();
-            $data['jobId'] = JobService::generateJobId($this->isUseJobService());
+            $refileRequest->validatePostData();
+        } catch (APIException $exception) {
+            $this->invalidRequestResponse($exception);
+        }
 
-            $refileRequest = new RefileRequest($data);
+        $refileRequest->create();
 
-            try {
-                $refileRequest->validatePostData();
-            } catch (APIException $exception) {
-                $this->invalidRequestResponse($exception);
-            }
+        $this->sendJobServiceMessages($refileRequest);
 
-            $refileRequest->create();
+        APILogger::addDebug('Preparing refile request of item barcode ' . $data['itemBarcode']);
 
-            APILogger::addNotice('Beginning refile of item barcode ' . $data['itemBarcode']);
-
-            if ($this->isUseJobService()) {
-                APILogger::addDebug('Initiating job.', ['jobID' => $refileRequest->getJobId()]);
-                JobService::beginJob($refileRequest);
-            }
-
-            APILogger::addNotice('Getting item record');
+        try {
+            APILogger::addDebug('Getting item record');
             $itemClient = new ItemClient();
             $itemResponse = $itemClient->get('items?barcode=' . $data['itemBarcode']);
             $item = json_decode($itemResponse->getBody(), true)['data'][0];
 
-            APILogger::addNotice('Received item record', $item);
+            APILogger::addDebug('Received item record', $item);
 
-            APILogger::addNotice('Sending SIP2 call', [
+            APILogger::addDebug('Sending SIP2 call', [
                 'barcode'      => $item['barcode'],
                 'locationCode' => $item['location']['code']
             ]);
@@ -112,46 +109,44 @@ class RefileRequestController extends ServiceController
                 $sip2Client->getSip2Client()->get_message($refileResponse)
             );
 
-            APILogger::addNotice('Received SIP2 message', $result);
+            APILogger::addDebug('Received SIP2 message', $result);
 
-            $successFlag = true;
             // Log a failed SIP2 status change without terminating the request.
             if ($result['fixed']['Alert'] == 'Y') {
                 APILogger::addError('Failed to change status to AVAILABLE');
-                $successFlag = false;
             }
 
             $refileRequest->addFilter(new Filter('id', $refileRequest->getId()));
             $refileRequest->read();
             $refileRequest->update(
-                ['success' => $successFlag]
-            );
-
-            if ($this->isUseJobService()) {
-                APILogger::addDebug('Updating an existing job.', ['jobID' => $refileRequest->getJobId()]);
-                JobService::finishJob($refileRequest);
-            }
-
-            return $this->getResponse()->withJson(
-                new RefileRequestResponse($refileRequest)
+                ['success' => true]
             );
 
         } catch (RequestException $exception) {
-            APILogger::addError('Guzzle request exception:' . $exception->getMessage());
-            return $this->getResponse()->withJson(new ErrorResponse(
-                $exception->getCode(),
-                'refile-client-error',
-                'Request exception: ' . $exception->getMessage(),
-                $exception
-            ))->withStatus($exception->getCode());
+            APILogger::addError('Item Client exception: ' . $exception->getMessage());
         } catch (\Exception $exception) {
             APILogger::addError('Refile request failed: ' . $exception->getMessage());
-            return $this->getResponse()->withJson(new ErrorResponse(
-                500,
-                'refile-server-error',
-                $exception->getMessage(),
-                $exception
-            ))->withStatus(500);
+        }
+
+        return $this->getResponse()->withJson(
+            new RefileRequestResponse($refileRequest)
+        );
+    }
+
+    /**
+     * @param RefileRequest $refileRequest
+     */
+    public function sendJobServiceMessages(RefileRequest $refileRequest)
+    {
+        if ($this->isUseJobService()) {
+            APILogger::addDebug('Initiating job.', ['jobID' => $refileRequest->getJobId()]);
+            JobService::beginJob(
+                $refileRequest,
+                'Starting refile request job. (RefileID: ' . $refileRequest->getId() . ')'
+            );
+
+            APILogger::addDebug('Finishing refile request job.', ['jobID' => $refileRequest->getJobId()]);
+            JobService::finishJob($refileRequest);
         }
     }
 }

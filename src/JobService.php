@@ -202,7 +202,7 @@ class JobService
         self::getJobStatus()->setNotice(self::getJobNotice());
 
         APILogger::addDebug(
-            'Job is being initiated via the Job Service API. (ID: ' . $refileRequest->getId() . ')',
+            'Refile task initiated via the Job Service API. (RefileID: ' . $refileRequest->getId() . ')',
             [self::getJobStatus()]
         );
 
@@ -224,14 +224,11 @@ class JobService
             self::buildJobNotice($data, self::JOB_SUCCESS_MESSAGE . ' (RefileID: ' . $refileRequest->getId() . ')');
             self::getJobStatusSuccess()->setNotice(self::getJobNotice());
 
-            APILogger::addDebug(
-                'Success status sent to the Job Service API. (RefileID: ' . $refileRequest->getId() . ')'
-            );
-
             self::getJobClient()->success(
                 new Job(['id' => $refileRequest->getJobId()]),
                 self::getJobStatusSuccess()
             );
+
         } catch (\Exception $exception) {
             APILogger::addInfo(
                 'Job threw an exception. ' . $exception->getMessage() . '. (RefileID: ' . $refileRequest->getId() . ')'
