@@ -109,18 +109,25 @@ class RefileRequestController extends ServiceController
                 $sip2Client->getSip2Client()->get_message($refileResponse)
             );
 
+            // Track status issues for the database for NYPL only.
+            $statusFlag = true;
+
             APILogger::addDebug('Received SIP2 message', $result);
 
-            // Log a failed SIP2 status change without terminating the request.
+            // Log a failed SIP2 status change to AVAILABLE without terminating the request prematurely.
             if ($result['fixed']['Alert'] == 'Y') {
                 APILogger::addError('Failed to change status to AVAILABLE');
+                $statusFlag = false;
             }
 
             $refileRequest->addFilter(new Filter('id', $refileRequest->getId()));
             $refileRequest->read();
             $refileRequest->update(
-                ['success' => true]
+                ['success' => $statusFlag]
             );
+
+            // Reset the status for the API response for ReCAP.
+            $refileRequest->setSuccess(true);
 
             return $this->getResponse()->withJson(
                 new RefileRequestResponse($refileRequest)
