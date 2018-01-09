@@ -2,7 +2,7 @@
 /**
  * @SWG\Swagger(
  *     schemes={"http"},
- *     host="apidocs.nypltech.org",
+ *     host="platformdocs.nypl.org",
  *     basePath="/api",
  *     @SWG\Info(
  *         version="0.1",

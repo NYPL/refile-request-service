@@ -2,7 +2,7 @@
 
 /**
  * @SWG\Tag(
- *   name="recap-refile-requests",
+ *   name="recap",
  *   description="ReCAP Refile Request API"
  * )
  */

@@ -116,7 +116,7 @@ class RefileRequestController extends ServiceController
 
             // Log a failed SIP2 status change to AVAILABLE without terminating the request prematurely.
             if ($result['fixed']['Alert'] == 'Y') {
-                APILogger::addError('Failed to change status to AVAILABLE');
+                APILogger::addError('Failed to change status to AVAILABLE.' . ' (itemBarcode: ' . $refileRequest->getItemBarcode() . ')');
                 $statusFlag = false;
             }
 
