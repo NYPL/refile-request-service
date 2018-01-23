@@ -113,8 +113,6 @@ Create a Swagger route to generate Swagger specification documentation:
 ~~~~
 $service->get("/docs", SwaggerGenerator::class);
 ~~~~
-<<<<<<< Updated upstream
-=======
 
 ### Docker Integration
 
