@@ -37,4 +37,4 @@ REVOKE ALL ON TABLE refile_request FROM refile;
 GRANT ALL ON TABLE refile_request TO refile;
 
 ALTER TABLE refile_request ADD af_message text;
-ALTER TABLE refile_request ADD sip2_response jsonb;
+ALTER TABLE refile_request ADD sip2_response text;
