@@ -111,6 +111,8 @@ class RefileRequestController extends ServiceController
 
             // Track status issues for the database for NYPL only.
             $statusFlag = true;
+            $afMessage = null;
+            $sip2Response = null;
 
             APILogger::addDebug('Received SIP2 message', $result);
 
@@ -118,12 +120,18 @@ class RefileRequestController extends ServiceController
             if ($result['fixed']['Alert'] == 'Y') {
                 APILogger::addError('Failed to change status to AVAILABLE.' . ' (itemBarcode: ' . $refileRequest->getItemBarcode() . ')');
                 $statusFlag = false;
+                $afMessage = $result['variable']['AF'];
+                $sip2Response = json_encode($result);
             }
 
             $refileRequest->addFilter(new Filter('id', $refileRequest->getId()));
             $refileRequest->read();
             $refileRequest->update(
-                ['success' => $statusFlag]
+                [
+                    'success' => $statusFlag,
+                    'af_message' => $statusFlag === false ? $afMessage :  null,
+                    'sip2_response' => $statusFlag === false ? $sip2Response : null
+                ]
             );
 
             // Reset the status for the API response for ReCAP.
