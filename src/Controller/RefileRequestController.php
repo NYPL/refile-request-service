@@ -129,8 +129,8 @@ class RefileRequestController extends ServiceController
             $refileRequest->update(
                 [
                     'success' => $statusFlag,
-                    'af_message' => $statusFlag === false ? $afMessage :  null,
-                    'sip2_response' => $statusFlag === false ? $sip2Response : null
+                    'af_message' => $afMessage,
+                    'sip2_response' => $sip2Response
                 ]
             );
 
