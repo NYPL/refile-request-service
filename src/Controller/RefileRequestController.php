@@ -12,9 +12,6 @@ use NYPL\Starter\APIException;
 use NYPL\Starter\APILogger;
 use NYPL\Starter\Filter;
 use NYPL\Starter\Model\Response\ErrorResponse;
-use NYPL\Starter\ModelSet;
-use NYPL\Starter\OrderBy;
-use Slim\Http\Request;
 use Slim\Http\Response;
 
 /**
