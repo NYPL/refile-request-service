@@ -50,17 +50,7 @@ class RefileRequest extends NewRefileRequest implements ReadInterface
      */
     public $updatedDate;
 
-    /**
-     * @SWG\Property(example="Item was put on holdshelf."")
-     * @var string
-     */
-    public $afMessage;
 
-    /**
-     * @SWG\Property(example="{"fixed":{}, "variable": {}}")
-     * @var string
-     */
-    public $sip2Response;
 
     public function getSchema()
     {
@@ -195,39 +185,6 @@ class RefileRequest extends NewRefileRequest implements ReadInterface
     public function translateUpdatedDate($updatedDate = '')
     {
         return new LocalDateTime(LocalDateTime::FORMAT_DATE_TIME_RFC, $updatedDate);
-    }
-
-    /**
-     * @return string
-     */
-    public function getAfMessage()
-    {
-        return $this->afMessage;
-    }
-
-    /**
-     * @param string $afMessage
-     */
-    public function setAfMessage($afMessage)
-    {
-        $this->afMessage = $afMessage;
-    }
-
-    /**
-     * @return string
-     */
-    public function getSip2Response()
-    {
-        return json_decode($this->sip2Response) ;
-    }
-
-    /**
-     * @param string $sip2Response
-     */
-    public function setSip2Response($sip2Response)
-    {
-
-        $this->sip2Response = $sip2Response;
     }
 
     /**

@@ -12,6 +12,9 @@ use NYPL\Starter\APIException;
 use NYPL\Starter\APILogger;
 use NYPL\Starter\Filter;
 use NYPL\Starter\Model\Response\ErrorResponse;
+use NYPL\Starter\ModelSet;
+use NYPL\Starter\OrderBy;
+use Slim\Http\Request;
 use Slim\Http\Response;
 
 /**
@@ -110,16 +113,17 @@ class RefileRequestController extends ServiceController
             );
 
             // Track status issues for the database for NYPL only.
-            $statusFlag = true;
+            $statusFlag = false;
             $afMessage = null;
             $sip2Response = null;
 
             APILogger::addDebug('Received SIP2 message', $result);
 
             // Log a failed SIP2 status change to AVAILABLE without terminating the request prematurely.
-            if ($result['fixed']['Alert'] == 'Y') {
+            if ($result['fixed']['Alert'] == 'N' && $result['fixed']['Ok'] == '1') {
+                $statusFlag = true;
+            } else {
                 APILogger::addError('Failed to change status to AVAILABLE.' . ' (itemBarcode: ' . $refileRequest->getItemBarcode() . ')');
-                $statusFlag = false;
             }
 
             $afMessage = $result['variable']['AF'];
@@ -161,6 +165,9 @@ class RefileRequestController extends ServiceController
         }
     }
 
+
+
+
     /**
      * @param RefileRequest $refileRequest
      */
@@ -176,59 +183,5 @@ class RefileRequestController extends ServiceController
             APILogger::addDebug('Finishing refile request job.', ['jobID' => $refileRequest->getJobId()]);
             JobService::finishJob($refileRequest);
         }
-    }
-
-    /**
-     * @SWG\Get(
-     *     path="/v0.1/recap/refile-requests/{barcode}",
-     *     summary="Get a Refile Request by barcode",
-     *     tags={"recap"},
-     *     operationId="getRefileRequestByBarcode",
-     *     consumes={"application/json"}
-     *     produces={"application/json"}
-     *     @SWG\Parameter(
-     *          name="barcode",
-     *          in="path",
-     *          description="Barcode of a refile request",
-     *          required=true,
-     *          type="string",
-     *          format="string"
-     *     ),
-     *     @SWG\Response(
-     *         response=200,
-     *         description="Successful operation",
-     *         @SWG\Schema(ref="#/definitions/RefileRequestResponse")
-     *     ),
-     *     @SWG\Response(
-     *         response="401",
-     *         description="Unauthorized"
-     *     ),
-     *     @SWG\Response(
-     *         response="404",
-     *         description="Not found",
-     *         @SWG\Schema(ref="#/definitions/ErrorResponse")
-     *     ),
-     *     @SWG\Response(
-     *         response="500",
-     *         description="Generic server error",
-     *         @SWG\Schema(ref="#/definitions/ErrorResponse")
-     *     ),
-     *     security={
-     *         {
-     *             "api_auth": {"openid offline_access api write:hold_request readwrite:hold_request"}
-     *         }
-     *     }
-     * )
-     *
-     * @param $barcode
-     * @return Response
-     */
-    public function getRefileRequestByBarcode($barcode)
-    {
-        return $this->getDefaultReadResponse(
-            new RefileRequest(),
-            new RefileRequestResponse(),
-            new Filter(null,null,false, $barcode)
-        );
     }
 }
