@@ -218,7 +218,7 @@ class RefileRequest extends NewRefileRequest implements ReadInterface
      */
     public function getSip2Response()
     {
-        return $this->sip2Response;
+        return json_decode($this->sip2Response) ;
     }
 
     /**
@@ -226,6 +226,7 @@ class RefileRequest extends NewRefileRequest implements ReadInterface
      */
     public function setSip2Response($sip2Response)
     {
+
         $this->sip2Response = $sip2Response;
     }
 

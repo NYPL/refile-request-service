@@ -120,9 +120,10 @@ class RefileRequestController extends ServiceController
             if ($result['fixed']['Alert'] == 'Y') {
                 APILogger::addError('Failed to change status to AVAILABLE.' . ' (itemBarcode: ' . $refileRequest->getItemBarcode() . ')');
                 $statusFlag = false;
-                $afMessage = $result['variable']['AF'];
-                $sip2Response = json_encode($result);
             }
+
+            $afMessage = $result['variable']['AF'];
+            $sip2Response = json_encode($result);
 
             $refileRequest->addFilter(new Filter('id', $refileRequest->getId()));
             $refileRequest->read();
@@ -175,5 +176,59 @@ class RefileRequestController extends ServiceController
             APILogger::addDebug('Finishing refile request job.', ['jobID' => $refileRequest->getJobId()]);
             JobService::finishJob($refileRequest);
         }
+    }
+
+    /**
+     * @SWG\Get(
+     *     path="/v0.1/recap/refile-requests/{barcode}",
+     *     summary="Get a Refile Request by barcode",
+     *     tags={"recap"},
+     *     operationId="getRefileRequestByBarcode",
+     *     consumes={"application/json"}
+     *     produces={"application/json"}
+     *     @SWG\Parameter(
+     *          name="barcode",
+     *          in="path",
+     *          description="Barcode of a refile request",
+     *          required=true,
+     *          type="string",
+     *          format="string"
+     *     ),
+     *     @SWG\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @SWG\Schema(ref="#/definitions/RefileRequestResponse")
+     *     ),
+     *     @SWG\Response(
+     *         response="401",
+     *         description="Unauthorized"
+     *     ),
+     *     @SWG\Response(
+     *         response="404",
+     *         description="Not found",
+     *         @SWG\Schema(ref="#/definitions/ErrorResponse")
+     *     ),
+     *     @SWG\Response(
+     *         response="500",
+     *         description="Generic server error",
+     *         @SWG\Schema(ref="#/definitions/ErrorResponse")
+     *     ),
+     *     security={
+     *         {
+     *             "api_auth": {"openid offline_access api write:hold_request readwrite:hold_request"}
+     *         }
+     *     }
+     * )
+     *
+     * @param $barcode
+     * @return Response
+     */
+    public function getRefileRequestByBarcode($barcode)
+    {
+        return $this->getDefaultReadResponse(
+            new RefileRequest(),
+            new RefileRequestResponse(),
+            new Filter(null,null,false, $barcode)
+        );
     }
 }
