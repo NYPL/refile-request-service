@@ -63,6 +63,8 @@ class RefileRequest extends NewRefileRequest implements ReadInterface
                     ["name" => "success", "type" => "boolean"],
                     ["name" => "createdDate", "type" => ["string", "null"]],
                     ["name" => "updatedDate", "type" => ["string", "null"]],
+                    ["name" => "afMessage", "type" => ["string", "null"]],
+                    ["name" => "sip2Response", "type" => ["string", "null"]],
                 ]
             ];
     }
