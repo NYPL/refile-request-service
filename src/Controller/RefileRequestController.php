@@ -12,6 +12,7 @@ use NYPL\Starter\APIException;
 use NYPL\Starter\APILogger;
 use NYPL\Starter\Filter;
 use NYPL\Starter\Model\Response\ErrorResponse;
+use NYPL\Starter\ModelSet;
 use Slim\Http\Response;
 
 /**
@@ -161,6 +162,89 @@ class RefileRequestController extends ServiceController
         }
     }
 
+    /**
+     * @SWG\Get(
+     *     path="/v0.1/recap/refile-requests",
+     *     summary="Get a Refile Request by barcode",
+     *     tags={"recap"},
+     *     operationId="getRefileRequests",
+     *     consumes={"application/json"}
+     *     produces={"application/json"}
+     *     @SWG\Parameter(
+     *          name="createdDate",
+     *          in="query",
+     *          description="Creation date of a refile request. (Format: [YYYY-MM-DD'T'HH:MM:SS,YYYY-MM-DD'T'HH:MM:SS]",
+     *          required=true,
+     *          type="string",
+     *          format="string"
+     *     ),
+     *     @SWG\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @SWG\Schema(ref="#/definitions/RefileRequestResponse")
+     *     ),
+     *     @SWG\Response(
+     *         response="401",
+     *         description="Unauthorized"
+     *     ),
+     *     @SWG\Response(
+     *         response="404",
+     *         description="Not found",
+     *         @SWG\Schema(ref="#/definitions/ErrorResponse")
+     *     ),
+     *     @SWG\Response(
+     *         response="500",
+     *         description="Generic server error",
+     *         @SWG\Schema(ref="#/definitions/ErrorResponse")
+     *     ),
+     *     security={
+     *         {
+     *             "api_auth": {"openid offline_access api write:hold_request readwrite:hold_request"}
+     *         }
+     *     }
+     * )
+     *
+     * @return Response
+     * @throws \Exception
+     * @throws RequestException
+     */
+    public function getRefileRequests()
+    {
+        try {
+            $createdDateFilter = $this->getRequest()->getQueryParam('createdDate') ?
+                new Filter(
+                    'createdDate',
+                    $this->getRequest()->getQueryParam('createdDate'),
+                    false
+                ) : null;
+
+            $refileRequestsSet = new ModelSet(new RefileRequest());
+            $refileRequestsSet->setOrderBy('createdDate');
+            $refileRequestsSet->setOrderDirection('DESC');
+            return $this->getDefaultReadResponse(
+                $refileRequestsSet,
+                new RefileRequestResponse(),
+                $createdDateFilter
+            );
+        } catch (RequestException $exception) {
+            APILogger::addError('Item Client exception: ' . $exception->getMessage());
+            return $this->getResponse()->withJson(new ErrorResponse(
+                $exception->getCode(),
+                'refile-client-error',
+                $exception->getMessage(),
+                null
+            ))->withStatus($exception->getCode());
+        } catch (\Exception $exception) {
+            APILogger::addError('Getting refile request failed: ' . $exception->getMessage());
+            return $this->getResponse()->withJson(new ErrorResponse(
+                500,
+                'refile-server-error',
+                $exception->getMessage(),
+                $exception
+            ))->withStatus(500);
+        }
+    }
+    
     /**
      * @param RefileRequest $refileRequest
      */
