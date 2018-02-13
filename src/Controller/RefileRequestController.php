@@ -58,7 +58,7 @@ class RefileRequestController extends ServiceController
      *     ),
      *     security={
      *         {
-     *             "api_auth": {"openid offline_access api write:hold_request readwrite:hold_request"}
+     *             "api_auth": {"openid offline_access api read:refile_request write:refile_request"}
      *         }
      *     }
      * )
@@ -165,18 +165,42 @@ class RefileRequestController extends ServiceController
     /**
      * @SWG\Get(
      *     path="/v0.1/recap/refile-requests",
-     *     summary="Get a Refile Request by barcode",
+     *     summary="Get a Refile Request",
      *     tags={"recap"},
      *     operationId="getRefileRequests",
-     *     consumes={"application/json"}
-     *     produces={"application/json"}
+     *     consumes={"application/json"},
+     *     produces={"application/json"},
      *     @SWG\Parameter(
      *          name="createdDate",
      *          in="query",
-     *          description="Creation date of a refile request. (Format: [YYYY-MM-DD'T'HH:MM:SS,YYYY-MM-DD'T'HH:MM:SS]",
-     *          required=true,
+     *          description="Specific start date or date range (e.g. [2013-09-03T13:17:45Z,2013-09-03T13:37:45Z])",
+     *          required=false,
      *          type="string",
      *          format="string"
+     *     ),
+     *     @SWG\Parameter(
+     *          name="success",
+     *          in="query",
+     *          description="Success status of a refile request",
+     *          required=false,
+     *          type="string",
+     *          format="string"
+     *     ),
+     *     @SWG\Parameter(
+     *          name="offset",
+     *          in="query",
+     *          description="",
+     *          required=false,
+     *          type="integer",
+     *          format="integer"
+     *     ),
+     *     @SWG\Parameter(
+     *          name="limit",
+     *          in="query",
+     *          description="",
+     *          required=false,
+     *          type="integer",
+     *          format="integer"
      *     ),
      *     @SWG\Response(
      *         response=200,
@@ -199,7 +223,7 @@ class RefileRequestController extends ServiceController
      *     ),
      *     security={
      *         {
-     *             "api_auth": {"openid offline_access api write:hold_request readwrite:hold_request"}
+     *             "api_auth": {"openid offline_access api read:refile_request"}
      *         }
      *     }
      * )
@@ -231,7 +255,7 @@ class RefileRequestController extends ServiceController
                     )
                 );
             }
-            
+
             return $this->getDefaultReadResponse(
                 $refileRequestsSet,
                 new RefileRequestResponse(),
