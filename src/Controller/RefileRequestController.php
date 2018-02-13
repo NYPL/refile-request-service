@@ -93,10 +93,13 @@ class RefileRequestController extends ServiceController
 
             APILogger::addDebug('Received item record', $item);
 
-            APILogger::addDebug('Sending SIP2 call', [
+            APILogger::addDebug(
+                'Sending SIP2 call',
+                [
                 'barcode'      => $item['barcode'],
                 'locationCode' => $item['location']['code']
-            ]);
+                ]
+            );
 
             $sip2Client = new SIP2Client();
 
@@ -145,27 +148,31 @@ class RefileRequestController extends ServiceController
 
         } catch (RequestException $exception) {
             APILogger::addError('Item Client exception: ' . $exception->getMessage());
-            return $this->getResponse()->withJson(new ErrorResponse(
-                $exception->getCode(),
-                'refile-client-error',
-                $exception->getMessage(),
-                null
-            ))->withStatus($exception->getCode());
+            return $this->getResponse()->withJson(
+                new ErrorResponse(
+                    $exception->getCode(),
+                    'refile-client-error',
+                    $exception->getMessage(),
+                    null
+                )
+            )->withStatus($exception->getCode());
         } catch (\Exception $exception) {
             APILogger::addError('Refile request failed: ' . $exception->getMessage());
-            return $this->getResponse()->withJson(new ErrorResponse(
-                500,
-                'refile-server-error',
-                $exception->getMessage(),
-                $exception
-            ))->withStatus(500);
+            return $this->getResponse()->withJson(
+                new ErrorResponse(
+                    500,
+                    'refile-server-error',
+                    $exception->getMessage(),
+                    $exception
+                )
+            )->withStatus(500);
         }
     }
 
     /**
      * @SWG\Get(
      *     path="/v0.1/recap/refile-requests",
-     *     summary="Get a Refile Request",
+     *     summary="Get Refile Requests",
      *     tags={"recap"},
      *     operationId="getRefileRequests",
      *     consumes={"application/json"},
@@ -263,20 +270,24 @@ class RefileRequestController extends ServiceController
             );
         } catch (RequestException $exception) {
             APILogger::addError('Item Client exception: ' . $exception->getMessage());
-            return $this->getResponse()->withJson(new ErrorResponse(
-                $exception->getCode(),
-                'refile-client-error',
-                $exception->getMessage(),
-                null
-            ))->withStatus($exception->getCode());
+            return $this->getResponse()->withJson(
+                new ErrorResponse(
+                    $exception->getCode(),
+                    'refile-client-error',
+                    $exception->getMessage(),
+                    null
+                )
+            )->withStatus($exception->getCode());
         } catch (\Exception $exception) {
             APILogger::addError('Getting refile request failed: ' . $exception->getMessage());
-            return $this->getResponse()->withJson(new ErrorResponse(
-                500,
-                'refile-server-error',
-                $exception->getMessage(),
-                $exception
-            ))->withStatus(500);
+            return $this->getResponse()->withJson(
+                new ErrorResponse(
+                    500,
+                    'refile-server-error',
+                    $exception->getMessage(),
+                    $exception
+                )
+            )->withStatus(500);
         }
     }
     

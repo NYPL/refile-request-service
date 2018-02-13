@@ -60,7 +60,7 @@ class RefileRequestModel extends Model
      */
     public function getSip2Response()
     {
-        return json_decode($this->sip2Response) ;
+        return json_decode($this->sip2Response);
     }
     /**
      * @param string $sip2Response
