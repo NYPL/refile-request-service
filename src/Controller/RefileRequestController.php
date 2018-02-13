@@ -221,6 +221,17 @@ class RefileRequestController extends ServiceController
             $refileRequestsSet = new ModelSet(new RefileRequest());
             $refileRequestsSet->setOrderBy('createdDate');
             $refileRequestsSet->setOrderDirection('DESC');
+
+            if ($this->getRequest()->getQueryParam('success')) {
+                $refileRequestsSet->addFilter(
+                    new Filter(
+                        'success',
+                        $this->getRequest()->getQueryParam('success'),
+                        false
+                    )
+                );
+            }
+            
             return $this->getDefaultReadResponse(
                 $refileRequestsSet,
                 new RefileRequestResponse(),
