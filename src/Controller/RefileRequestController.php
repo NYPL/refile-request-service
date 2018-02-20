@@ -120,10 +120,15 @@ class RefileRequestController extends ServiceController
 
             APILogger::addDebug('Received SIP2 message', $result);
 
-            // Log a failed SIP2 status change to AVAILABLE without terminating the request prematurely.
+            // A Refile Request is successful when an item is checked in by
+            // the AutomatedCirculation System (ACS), i.e. Ok is set to 1 and
+            // no alerts are triggered because of active holds on the item, i.e. Alert is set to N
+            // Please refer to documentation on SIP2 responses at
+            // https://github.com/NYPL/refile-request-service/wiki/SIP2-Responses
             if ($result['fixed']['Alert'] == 'N' && $result['fixed']['Ok'] == '1') {
                 $statusFlag = true;
             } else {
+                // Log a failed SIP2 status change to AVAILABLE without terminating the request prematurely.
                 APILogger::addError('Failed to change status to AVAILABLE.' . ' (itemBarcode: ' . $refileRequest->getItemBarcode() . ')');
             }
             $afMessage = $result['variable']['AF'];
