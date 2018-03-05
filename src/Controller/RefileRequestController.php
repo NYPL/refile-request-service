@@ -58,7 +58,7 @@ class RefileRequestController extends ServiceController
      *     ),
      *     security={
      *         {
-     *             "api_auth": {"openid offline_access api read:refile_request write:refile_request"}
+     *             "api_auth": {"offline_access openid api read:item"}
      *         }
      *     }
      * )
@@ -195,8 +195,12 @@ class RefileRequestController extends ServiceController
      *          in="query",
      *          description="Success status of a refile request",
      *          required=false,
-     *          type="string",
-     *          format="string"
+     *          type="boolean",
+     *          @SWG\Items(
+     *              enum={"true", "false"},
+     *              default=""
+     *          ),
+     *          collectionFormat="multi"
      *     ),
      *     @SWG\Parameter(
      *          name="offset",
@@ -213,6 +217,18 @@ class RefileRequestController extends ServiceController
      *          required=false,
      *          type="integer",
      *          format="integer"
+     *     ),
+     *     @SWG\Parameter(
+     *          name="includeTotalCount",
+     *          in="query",
+     *          description="Status to include total count",
+     *          required=false,
+     *          type="boolean",
+     *          @SWG\Items(
+     *              enum={"true", "false"},
+     *              default=""
+     *          ),
+     *          collectionFormat="multi"
      *     ),
      *     @SWG\Response(
      *         response=200,
@@ -235,7 +251,7 @@ class RefileRequestController extends ServiceController
      *     ),
      *     security={
      *         {
-     *             "api_auth": {"openid offline_access api read:refile_request"}
+     *             "api_auth": {"offline_access openid api read:item"}
      *         }
      *     }
      * )
