@@ -95,9 +95,9 @@ class MockConfig extends Config
             $dotEnv->load();
         }
 
-        $dotEnv->required(self::getRequired());
+//        $dotEnv->required(self::getRequired());
 
-        $dotEnv->required(self::getAddedRequired());
+//        $dotEnv->required(self::getAddedRequired());
 
         self::setInitialized(true);
     }
