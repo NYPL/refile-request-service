@@ -9,7 +9,7 @@ use NYPL\Services\Controller\RefileRequestController;
 require __DIR__ . '/vendor/autoload.php';
 
 try {
-    Config::initialize(__DIR__);
+    Config::initialize(__DIR__ . '/config');
 
     $container = new ServiceContainer();
 
