@@ -56,7 +56,18 @@ class RefileRequestControllerTest extends TestCase
                     return $this->invalidRequestResponse($exception);
                 }
             }
-       };
+
+            public function getRefileRequests()
+            {
+                $data = json_decode(file_get_contents(__DIR__ . '/../Stubs/get_refile_request_response_200.json'), true);
+
+                $refileRequests = new RefileRequest($data);
+
+                return $this->getResponse()->withJson(
+                    new RefileRequestResponse($refileRequests)
+                );
+            }
+        };
     }
 
     /**
@@ -83,5 +94,18 @@ class RefileRequestControllerTest extends TestCase
 
         self::assertInstanceOf('Slim\Http\Response', $response);
         self::assertSame(400, $response->getStatusCode());
+    }
+
+    /**
+     * @covers NYPL\Services\Controller\RefileRequestController::getRefileRequests()
+     */
+    public function testGetRefileRequestsReturns200()
+    {
+        $controller = $this->fakeRefileRequestController;
+
+        $response = $controller->getRefileRequests();
+
+        self::assertInstanceOf('Slim\Http\Response', $response);
+        self::assertSame(200, $response->getStatusCode());
     }
 }

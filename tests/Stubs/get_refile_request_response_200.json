@@ -1,0 +1,258 @@
+{
+  "data": [
+    {
+      "id": 81369,
+      "jobId": "1298795a8dd6d18000f",
+      "success": true,
+      "createdDate": "2018-02-21T15:30:09-05:00",
+      "updatedDate": "2018-02-21T15:30:11-05:00",
+      "itemBarcode": "33433084847668",
+      "afMessage": null,
+      "sip2Response": null
+    },
+    {
+      "id": 81368,
+      "jobId": "1298785a8dd6cd21854",
+      "success": true,
+      "createdDate": "2018-02-21T15:30:05-05:00",
+      "updatedDate": "2018-02-21T15:30:07-05:00",
+      "itemBarcode": "33433037390402",
+      "afMessage": null,
+      "sip2Response": null
+    },
+    {
+      "id": 81367,
+      "jobId": "1298775a8dd6ca35084",
+      "success": true,
+      "createdDate": "2018-02-21T15:30:02-05:00",
+      "updatedDate": "2018-02-21T15:30:04-05:00",
+      "itemBarcode": "33433073965968",
+      "afMessage": null,
+      "sip2Response": null
+    },
+    {
+      "id": 81366,
+      "jobId": "1298765a8dd6c79c0be",
+      "success": true,
+      "createdDate": "2018-02-21T15:29:59-05:00",
+      "updatedDate": "2018-02-21T15:30:01-05:00",
+      "itemBarcode": "33433073305645",
+      "afMessage": null,
+      "sip2Response": null
+    },
+    {
+      "id": 81365,
+      "jobId": "1298755a8dd6c5b3f4a",
+      "success": true,
+      "createdDate": "2018-02-21T15:29:57-05:00",
+      "updatedDate": "2018-02-21T15:29:58-05:00",
+      "itemBarcode": "33433059264329",
+      "afMessage": null,
+      "sip2Response": null
+    },
+    {
+      "id": 81364,
+      "jobId": "1298745a8dd6c30e1c1",
+      "success": true,
+      "createdDate": "2018-02-21T15:29:55-05:00",
+      "updatedDate": "2018-02-21T15:29:57-05:00",
+      "itemBarcode": "33433047197037",
+      "afMessage": null,
+      "sip2Response": null
+    },
+    {
+      "id": 81363,
+      "jobId": "1298735a8dd6c070ebb",
+      "success": true,
+      "createdDate": "2018-02-21T15:29:52-05:00",
+      "updatedDate": "2018-02-21T15:29:54-05:00",
+      "itemBarcode": "33433077193849",
+      "afMessage": null,
+      "sip2Response": null
+    },
+    {
+      "id": 81362,
+      "jobId": "1298725a8dd6b9289e2",
+      "success": true,
+      "createdDate": "2018-02-21T15:29:45-05:00",
+      "updatedDate": "2018-02-21T15:29:47-05:00",
+      "itemBarcode": "33433020937375",
+      "afMessage": null,
+      "sip2Response": null
+    },
+    {
+      "id": 81361,
+      "jobId": "1298715a8dd6b66f56f",
+      "success": true,
+      "createdDate": "2018-02-21T15:29:42-05:00",
+      "updatedDate": "2018-02-21T15:29:44-05:00",
+      "itemBarcode": "33433037015330",
+      "afMessage": null,
+      "sip2Response": null
+    },
+    {
+      "id": 81360,
+      "jobId": "1298705a8dd6b2eb68d",
+      "success": false,
+      "createdDate": "2018-02-21T15:29:38-05:00",
+      "updatedDate": "2018-02-21T15:29:39-05:00",
+      "itemBarcode": "32101057800292",
+      "afMessage": null,
+      "sip2Response": null
+    },
+    {
+      "id": 81359,
+      "jobId": "1298695a8dd6af1834f",
+      "success": false,
+      "createdDate": "2018-02-21T15:29:35-05:00",
+      "updatedDate": "2018-02-21T15:29:36-05:00",
+      "itemBarcode": "32101055599037",
+      "afMessage": null,
+      "sip2Response": null
+    },
+    {
+      "id": 81358,
+      "jobId": "1298685a8dd6a9043bf",
+      "success": true,
+      "createdDate": "2018-02-21T15:29:29-05:00",
+      "updatedDate": "2018-02-21T15:29:34-05:00",
+      "itemBarcode": "33433060688847",
+      "afMessage": null,
+      "sip2Response": null
+    },
+    {
+      "id": 81357,
+      "jobId": "1298665a8dd69bb58f3",
+      "success": true,
+      "createdDate": "2018-02-21T15:29:15-05:00",
+      "updatedDate": "2018-02-21T15:29:17-05:00",
+      "itemBarcode": "33433037649567",
+      "afMessage": null,
+      "sip2Response": null
+    },
+    {
+      "id": 81356,
+      "jobId": "1298655a8dd699092db",
+      "success": true,
+      "createdDate": "2018-02-21T15:29:13-05:00",
+      "updatedDate": "2018-02-21T15:29:15-05:00",
+      "itemBarcode": "33433016171898",
+      "afMessage": null,
+      "sip2Response": null
+    },
+    {
+      "id": 81355,
+      "jobId": "1298635a8dd690844cd",
+      "success": false,
+      "createdDate": "2018-02-21T15:29:04-05:00",
+      "updatedDate": "2018-02-21T15:29:07-05:00",
+      "itemBarcode": "33433037001942",
+      "afMessage": null,
+      "sip2Response": null
+    },
+    {
+      "id": 81354,
+      "jobId": "1298625a8dd68d58d2c",
+      "success": false,
+      "createdDate": "2018-02-21T15:29:01-05:00",
+      "updatedDate": "2018-02-21T15:29:02-05:00",
+      "itemBarcode": "32101058373315",
+      "afMessage": null,
+      "sip2Response": null
+    },
+    {
+      "id": 81353,
+      "jobId": "1298615a8dd68964bce",
+      "success": true,
+      "createdDate": "2018-02-21T15:28:57-05:00",
+      "updatedDate": "2018-02-21T15:29:00-05:00",
+      "itemBarcode": "33433037641952",
+      "afMessage": null,
+      "sip2Response": null
+    },
+    {
+      "id": 81352,
+      "jobId": "1298585a8dd67d43ae2",
+      "success": true,
+      "createdDate": "2018-02-21T15:28:45-05:00",
+      "updatedDate": "2018-02-21T15:28:47-05:00",
+      "itemBarcode": "33433083058663",
+      "afMessage": null,
+      "sip2Response": null
+    },
+    {
+      "id": 81351,
+      "jobId": "1298565a8dd66ac3b96",
+      "success": true,
+      "createdDate": "2018-02-21T15:28:26-05:00",
+      "updatedDate": "2018-02-21T15:28:28-05:00",
+      "itemBarcode": "33433005267046",
+      "afMessage": null,
+      "sip2Response": null
+    },
+    {
+      "id": 81350,
+      "jobId": "1298515a8dd6426be18",
+      "success": false,
+      "createdDate": "2018-02-21T15:27:46-05:00",
+      "updatedDate": "2018-02-21T15:27:47-05:00",
+      "itemBarcode": "32101063165128",
+      "afMessage": null,
+      "sip2Response": null
+    },
+    {
+      "id": 81349,
+      "jobId": "1298505a8dd63f09800",
+      "success": false,
+      "createdDate": "2018-02-21T15:27:43-05:00",
+      "updatedDate": "2018-02-21T15:27:43-05:00",
+      "itemBarcode": "32101064025941",
+      "afMessage": null,
+      "sip2Response": null
+    },
+    {
+      "id": 81348,
+      "jobId": "1298455a8dd61ce70f4",
+      "success": true,
+      "createdDate": "2018-02-21T15:27:08-05:00",
+      "updatedDate": "2018-02-21T15:27:10-05:00",
+      "itemBarcode": "33433030957652",
+      "afMessage": null,
+      "sip2Response": null
+    },
+    {
+      "id": 81347,
+      "jobId": "1298435a8dd5e7db085",
+      "success": false,
+      "createdDate": "2018-02-21T15:26:15-05:00",
+      "updatedDate": "2018-02-21T15:26:18-05:00",
+      "itemBarcode": "CU08901791",
+      "afMessage": null,
+      "sip2Response": null
+    },
+    {
+      "id": 81346,
+      "jobId": "1298425a8dd5e4e9bd8",
+      "success": false,
+      "createdDate": "2018-02-21T15:26:12-05:00",
+      "updatedDate": "2018-02-21T15:26:15-05:00",
+      "itemBarcode": "CU08901783",
+      "afMessage": null,
+      "sip2Response": null
+    },
+    {
+      "id": 81345,
+      "jobId": "1298415a8dd5e19c9cd",
+      "success": false,
+      "createdDate": "2018-02-21T15:26:09-05:00",
+      "updatedDate": "2018-02-21T15:26:12-05:00",
+      "itemBarcode": "CU08901775",
+      "afMessage": null,
+      "sip2Response": null
+    }
+  ],
+  "count": 25,
+  "totalCount": 0,
+  "statusCode": 200,
+  "debugInfo": []
+}
