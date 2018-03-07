@@ -57,9 +57,9 @@ class RefileRequestController extends ServiceController
      *         @SWG\Schema(ref="#/definitions/ErrorResponse")
      *     ),
      *     security={
-     *         {
-     *             "api_auth": {"offline_access openid api read:item"}
-     *         }
+     *          {
+     *             "api_auth": {"openid offline_access api write:hold_request readwrite:hold_request"}
+     *          }
      *     }
      * )
      *
@@ -251,7 +251,7 @@ class RefileRequestController extends ServiceController
      *     ),
      *     security={
      *         {
-     *             "api_auth": {"offline_access openid api read:item"}
+     *             "api_auth": {"openid offline_access api write:hold_request readwrite:hold_request"}
      *         }
      *     }
      * )
