@@ -12,6 +12,7 @@ use NYPL\Starter\APIException;
 use NYPL\Starter\APILogger;
 use NYPL\Starter\Filter;
 use NYPL\Starter\Model\Response\ErrorResponse;
+use NYPL\Starter\ModelSet;
 use Slim\Http\Response;
 
 /**
@@ -56,9 +57,9 @@ class RefileRequestController extends ServiceController
      *         @SWG\Schema(ref="#/definitions/ErrorResponse")
      *     ),
      *     security={
-     *         {
+     *          {
      *             "api_auth": {"openid offline_access api write:hold_request readwrite:hold_request"}
-     *         }
+     *          }
      *     }
      * )
      *
@@ -92,10 +93,13 @@ class RefileRequestController extends ServiceController
 
             APILogger::addDebug('Received item record', $item);
 
-            APILogger::addDebug('Sending SIP2 call', [
+            APILogger::addDebug(
+                'Sending SIP2 call',
+                [
                 'barcode'      => $item['barcode'],
                 'locationCode' => $item['location']['code']
-            ]);
+                ]
+            );
 
             $sip2Client = new SIP2Client();
 
@@ -110,20 +114,34 @@ class RefileRequestController extends ServiceController
             );
 
             // Track status issues for the database for NYPL only.
-            $statusFlag = true;
+            $statusFlag = false;
+            $afMessage = null;
+            $sip2Response = null;
 
             APILogger::addDebug('Received SIP2 message', $result);
 
-            // Log a failed SIP2 status change to AVAILABLE without terminating the request prematurely.
-            if ($result['fixed']['Alert'] == 'Y') {
+            // A Refile Request is successful when an item is checked in by
+            // the AutomatedCirculation System (ACS), i.e. Ok is set to 1 and
+            // no alerts are triggered because of active holds on the item, i.e. Alert is set to N
+            // Please refer to documentation on SIP2 responses at
+            // https://github.com/NYPL/refile-request-service/wiki/SIP2-Responses
+            if ($result['fixed']['Alert'] == 'N' && $result['fixed']['Ok'] == '1') {
+                $statusFlag = true;
+            } else {
+                // Log a failed SIP2 status change to AVAILABLE without terminating the request prematurely.
                 APILogger::addError('Failed to change status to AVAILABLE.' . ' (itemBarcode: ' . $refileRequest->getItemBarcode() . ')');
-                $statusFlag = false;
             }
+            $afMessage = $result['variable']['AF'];
+            $sip2Response = json_encode($result);
 
             $refileRequest->addFilter(new Filter('id', $refileRequest->getId()));
             $refileRequest->read();
             $refileRequest->update(
-                ['success' => $statusFlag]
+                [
+                    'success' => $statusFlag,
+                    'af_message' => $afMessage,
+                    'sip2_response' => $sip2Response
+                ]
             );
 
             // Reset the status for the API response for ReCAP.
@@ -135,23 +153,165 @@ class RefileRequestController extends ServiceController
 
         } catch (RequestException $exception) {
             APILogger::addError('Item Client exception: ' . $exception->getMessage());
-            return $this->getResponse()->withJson(new ErrorResponse(
-                $exception->getCode(),
-                'refile-client-error',
-                $exception->getMessage(),
-                null
-            ))->withStatus($exception->getCode());
+            return $this->getResponse()->withJson(
+                new ErrorResponse(
+                    $exception->getCode(),
+                    'refile-client-error',
+                    $exception->getMessage(),
+                    null
+                )
+            )->withStatus($exception->getCode());
         } catch (\Exception $exception) {
             APILogger::addError('Refile request failed: ' . $exception->getMessage());
-            return $this->getResponse()->withJson(new ErrorResponse(
-                500,
-                'refile-server-error',
-                $exception->getMessage(),
-                $exception
-            ))->withStatus(500);
+            return $this->getResponse()->withJson(
+                new ErrorResponse(
+                    500,
+                    'refile-server-error',
+                    $exception->getMessage(),
+                    $exception
+                )
+            )->withStatus(500);
         }
     }
 
+    /**
+     * @SWG\Get(
+     *     path="/v0.1/recap/refile-requests",
+     *     summary="Get Refile Requests",
+     *     tags={"recap"},
+     *     operationId="getRefileRequests",
+     *     consumes={"application/json"},
+     *     produces={"application/json"},
+     *     @SWG\Parameter(
+     *          name="createdDate",
+     *          in="query",
+     *          description="Specific start date or date range (e.g. [2013-09-03T13:17:45Z,2013-09-03T13:37:45Z])",
+     *          required=false,
+     *          type="string",
+     *          format="string"
+     *     ),
+     *     @SWG\Parameter(
+     *          name="success",
+     *          in="query",
+     *          description="Success status of a refile request",
+     *          required=false,
+     *          type="boolean",
+     *          @SWG\Items(
+     *              enum={"true", "false"},
+     *              default=""
+     *          ),
+     *          collectionFormat="multi"
+     *     ),
+     *     @SWG\Parameter(
+     *          name="offset",
+     *          in="query",
+     *          description="",
+     *          required=false,
+     *          type="integer",
+     *          format="integer"
+     *     ),
+     *     @SWG\Parameter(
+     *          name="limit",
+     *          in="query",
+     *          description="",
+     *          required=false,
+     *          type="integer",
+     *          format="integer"
+     *     ),
+     *     @SWG\Parameter(
+     *          name="includeTotalCount",
+     *          in="query",
+     *          description="Status to include total count",
+     *          required=false,
+     *          type="boolean",
+     *          @SWG\Items(
+     *              enum={"true", "false"},
+     *              default=""
+     *          ),
+     *          collectionFormat="multi"
+     *     ),
+     *     @SWG\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @SWG\Schema(ref="#/definitions/RefileRequestResponse")
+     *     ),
+     *     @SWG\Response(
+     *         response="401",
+     *         description="Unauthorized"
+     *     ),
+     *     @SWG\Response(
+     *         response="404",
+     *         description="Not found",
+     *         @SWG\Schema(ref="#/definitions/ErrorResponse")
+     *     ),
+     *     @SWG\Response(
+     *         response="500",
+     *         description="Generic server error",
+     *         @SWG\Schema(ref="#/definitions/ErrorResponse")
+     *     ),
+     *     security={
+     *         {
+     *             "api_auth": {"openid offline_access api write:hold_request readwrite:hold_request"}
+     *         }
+     *     }
+     * )
+     *
+     * @return Response
+     * @throws \Exception
+     * @throws RequestException
+     */
+    public function getRefileRequests()
+    {
+        try {
+            $createdDateFilter = $this->getRequest()->getQueryParam('createdDate') ?
+                new Filter(
+                    'createdDate',
+                    $this->getRequest()->getQueryParam('createdDate'),
+                    false
+                ) : null;
+
+            $refileRequestsSet = new ModelSet(new RefileRequest());
+            $refileRequestsSet->setOrderBy('createdDate');
+            $refileRequestsSet->setOrderDirection('DESC');
+
+            if ($this->getRequest()->getQueryParam('success')) {
+                $refileRequestsSet->addFilter(
+                    new Filter(
+                        'success',
+                        $this->getRequest()->getQueryParam('success'),
+                        false
+                    )
+                );
+            }
+
+            return $this->getDefaultReadResponse(
+                $refileRequestsSet,
+                new RefileRequestResponse(),
+                $createdDateFilter
+            );
+        } catch (RequestException $exception) {
+            APILogger::addError('Item Client exception: ' . $exception->getMessage());
+            return $this->getResponse()->withJson(
+                new ErrorResponse(
+                    $exception->getCode(),
+                    'refile-client-error',
+                    $exception->getMessage(),
+                    null
+                )
+            )->withStatus($exception->getCode());
+        } catch (\Exception $exception) {
+            APILogger::addError('Getting refile request failed: ' . $exception->getMessage());
+            return $this->getResponse()->withJson(
+                new ErrorResponse(
+                    500,
+                    'refile-server-error',
+                    $exception->getMessage(),
+                    $exception
+                )
+            )->withStatus(500);
+        }
+    }
+    
     /**
      * @param RefileRequest $refileRequest
      */
