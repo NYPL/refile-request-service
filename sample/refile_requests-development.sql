@@ -39,7 +39,4 @@ GRANT ALL ON TABLE refile_request TO refile;
 ALTER TABLE refile_request ADD COLUMN af_message text;
 ALTER TABLE refile_request ADD COLUMN sip2_response text;
 
-CREATE INDEX idx_af_message ON refile_request(af_message);
 CREATE INDEX idx_created_date ON refile_request(created_date);
-CREATE INDEX idx_updated_date ON refile_request(updated_date);
-CREATE INDEX idx_item_barcode ON refile_request(item_barcode);
