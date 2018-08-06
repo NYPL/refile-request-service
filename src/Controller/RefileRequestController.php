@@ -2,6 +2,7 @@
 namespace NYPL\Services\Controller;
 
 use GuzzleHttp\Exception\RequestException;
+use NYPL\Services\Filter\ItemBarcodeQueryFilter;
 use NYPL\Services\ItemClient;
 use NYPL\Services\JobService;
 use NYPL\Services\Model\RefileRequest\RefileRequest;
@@ -276,6 +277,12 @@ class RefileRequestController extends ServiceController
             $refileRequestsSet->setOrderBy('createdDate');
             $refileRequestsSet->setOrderDirection('DESC');
 
+            $refileRequestsSet->addFilter(
+                new Filter\OrFilter(
+                    [new Filter()]
+                )
+            );
+
             if ($this->getRequest()->getQueryParam('success')) {
                 $refileRequestsSet->addFilter(
                     new Filter(
@@ -290,6 +297,146 @@ class RefileRequestController extends ServiceController
                 $refileRequestsSet,
                 new RefileRequestResponse(),
                 $createdDateFilter
+            );
+        } catch (RequestException $exception) {
+            APILogger::addError('Item Client exception: ' . $exception->getMessage());
+            return $this->getResponse()->withJson(
+                new ErrorResponse(
+                    $exception->getCode(),
+                    'refile-client-error',
+                    $exception->getMessage(),
+                    null
+                )
+            )->withStatus($exception->getCode());
+        } catch (\Exception $exception) {
+            APILogger::addError('Getting refile request failed: ' . $exception->getMessage());
+            return $this->getResponse()->withJson(
+                new ErrorResponse(
+                    500,
+                    'refile-server-error',
+                    $exception->getMessage(),
+                    $exception
+                )
+            )->withStatus(500);
+        }
+    }
+
+    /**
+     * @SWG\Get(
+     *     path="/v0.1/recap/refile-errors",
+     *     summary="Get Refile Errors",
+     *     tags={"recap"},
+     *     operationId="getRefileErrors",
+     *     consumes={"application/json"},
+     *     produces={"application/json"},
+     *     @SWG\Parameter(
+     *          name="createdDate",
+     *          in="query",
+     *          description="Specific start date or date range (e.g. [2013-09-03T13:17:45Z,2013-09-03T13:37:45Z])",
+     *          required=false,
+     *          type="string",
+     *          format="string"
+     *     ),
+     *     @SWG\Parameter(
+     *          name="success",
+     *          in="query",
+     *          description="Success status of a refile request",
+     *          required=false,
+     *          type="boolean",
+     *          @SWG\Items(
+     *              enum={"true", "false"},
+     *              default=""
+     *          ),
+     *          collectionFormat="multi"
+     *     ),
+     *     @SWG\Parameter(
+     *          name="offset",
+     *          in="query",
+     *          description="",
+     *          required=false,
+     *          type="integer",
+     *          format="integer"
+     *     ),
+     *     @SWG\Parameter(
+     *          name="limit",
+     *          in="query",
+     *          description="",
+     *          required=false,
+     *          type="integer",
+     *          format="integer"
+     *     ),
+     *     @SWG\Parameter(
+     *          name="includeTotalCount",
+     *          in="query",
+     *          description="Status to include total count",
+     *          required=false,
+     *          type="boolean",
+     *          @SWG\Items(
+     *              enum={"true", "false"},
+     *              default=""
+     *          ),
+     *          collectionFormat="multi"
+     *     ),
+     *     @SWG\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @SWG\Schema(ref="#/definitions/RefileRequestResponse")
+     *     ),
+     *     @SWG\Response(
+     *         response="401",
+     *         description="Unauthorized"
+     *     ),
+     *     @SWG\Response(
+     *         response="404",
+     *         description="Not found",
+     *         @SWG\Schema(ref="#/definitions/ErrorResponse")
+     *     ),
+     *     @SWG\Response(
+     *         response="500",
+     *         description="Generic server error",
+     *         @SWG\Schema(ref="#/definitions/ErrorResponse")
+     *     ),
+     *     security={
+     *         {
+     *             "api_auth": {"openid offline_access api write:hold_request readwrite:hold_request"}
+     *         }
+     *     }
+     * )
+     *
+     * @return Response
+     * @throws \Exception
+     * @throws RequestException
+     */
+    public function getRefileErrors()
+    {
+        try {
+            $createdItemBarcodeFilter = $this->getRequest()->getQueryParam('itemBarcode') ?
+                new ItemBarcodeQueryFilter(
+                    'itemBarcode',
+                    $this->getRequest()->getQueryParam('itemBarcode'),
+                    false,
+                    '',
+                    'LIKE'
+                ) : null;
+
+            $refileRequestsSet = new ModelSet(new RefileRequest());
+            $refileRequestsSet->setOrderBy('createdDate');
+            $refileRequestsSet->setOrderDirection('DESC');
+
+            if ($this->getRequest()->getQueryParam('success')) {
+                $refileRequestsSet->addFilter(
+                    new Filter(
+                        'success',
+                        $this->getRequest()->getQueryParam('success'),
+                        false
+                    )
+                );
+            }
+
+            return $this->getDefaultReadResponse(
+                $refileRequestsSet,
+                new RefileRequestResponse(),
+                $createdItemBarcodeFilter
             );
         } catch (RequestException $exception) {
             APILogger::addError('Item Client exception: ' . $exception->getMessage());

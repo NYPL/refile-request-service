@@ -21,6 +21,8 @@ try {
 
     $service->get('/api/v0.1/recap/refile-requests', RefileRequestController::class . ':getRefileRequests');
 
+    $service->get('/api/v0.1/recap/refile-errors', RefileRequestController::class. ':getRefileErrors');
+
     $service->run();
 } catch (\Exception $exception) {
     ErrorHandler::processShutdownError($exception->getMessage(), $exception);
