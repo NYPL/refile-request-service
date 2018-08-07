@@ -2,7 +2,6 @@
 namespace NYPL\Services\Controller;
 
 use GuzzleHttp\Exception\RequestException;
-use NYPL\Services\Filter\ItemBarcodeQueryFilter;
 use NYPL\Services\ItemClient;
 use NYPL\Services\JobService;
 use NYPL\Services\Model\RefileRequest\RefileRequest;
