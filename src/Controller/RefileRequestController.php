@@ -404,21 +404,54 @@ class RefileRequestController extends ServiceController
     public function getRefileErrors()
     {
         try {
+            $partnerItemsRefileErrorSet = new ModelSet(new RefileRequest());
+
+            $NyplItemsRefileErrorSet = new ModelSet(new RefileRequest());
+
+            $partnerItemsFilter = new Filter(
+                'itemBarcode',
+                '33%',
+                false,
+                '',
+                'NOT LIKE'
+            );
+
+            $NyplItemsFilter = new Filter(
+                'itemBarcode',
+                '33%',
+                false,
+                '',
+                'LIKE'
+            );
+
+            $refileSucceededFilter = new Filter(
+                'success',
+                'true'
+            );
+
+            $refileFailedFilter = new Filter(
+                'success',
+                'false'
+            );
+
+            $partnerItemsRefileErrorSet->setFilters(array($partnerItemsFilter,$refileSucceededFilter));
+
+            $NyplItemsRefileErrorSet->setFilters(array($NyplItemsFilter,$refileFailedFilter));
+
+            // Data sets must be read first to extract data
+            $partnerItemsRefileErrorSet->read();
+            $NyplItemsRefileErrorSet->read();
+
+            $partnerItemsRefileErrorSetData = $partnerItemsRefileErrorSet->getData();
+            $NyplItemsRefileErrorSetData = $NyplItemsRefileErrorSet->getData();
+
+            // Creating union of two data sets
+            $refileRequestsSetData = array_merge($partnerItemsRefileErrorSetData, $NyplItemsRefileErrorSetData);
+
             $refileRequestsSet = new ModelSet(new RefileRequest());
+            $refileRequestsSet->setData($refileRequestsSetData);
             $refileRequestsSet->setOrderBy('createdDate');
             $refileRequestsSet->setOrderDirection('DESC');
-
-            $refileRequestsSet->addFilter(
-              new Filter\OrFilter([
-                  new ItemBarcodeQueryFilter(
-                      'itemBarcode',
-                      $this->getRequest()->getQueryParam('itemBarcode'),
-                      false,
-                      '',
-                      'LIKE'
-                  )
-              ])
-            );
 
             return $this->getDefaultReadResponse(
                 $refileRequestsSet,
