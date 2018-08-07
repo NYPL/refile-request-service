@@ -331,18 +331,6 @@ class RefileRequestController extends ServiceController
      *          format="string"
      *     ),
      *     @SWG\Parameter(
-     *          name="success",
-     *          in="query",
-     *          description="Success status of a refile request",
-     *          required=false,
-     *          type="boolean",
-     *          @SWG\Items(
-     *              enum={"true", "false"},
-     *              default=""
-     *          ),
-     *          collectionFormat="multi"
-     *     ),
-     *     @SWG\Parameter(
      *          name="offset",
      *          in="query",
      *          description="",
@@ -403,6 +391,13 @@ class RefileRequestController extends ServiceController
     public function getRefileErrors()
     {
         try {
+            $createdDateFilter = $this->getRequest()->getQueryParam('createdDate') ?
+                new Filter(
+                    'createdDate',
+                    $this->getRequest()->getQueryParam('createdDate'),
+                    false
+                ) : null;
+
             $partnerItemsRefileErrorSet = new ModelSet(new RefileRequest());
 
             $NyplItemsRefileErrorSet = new ModelSet(new RefileRequest());
@@ -454,7 +449,8 @@ class RefileRequestController extends ServiceController
 
             return $this->getDefaultReadResponse(
                 $refileRequestsSet,
-                new RefileRequestResponse()
+                new RefileRequestResponse(),
+                $createdDateFilter
             );
         } catch (RequestException $exception) {
             APILogger::addError('Item Client exception: ' . $exception->getMessage());
