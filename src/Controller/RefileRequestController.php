@@ -398,9 +398,9 @@ class RefileRequestController extends ServiceController
                     false
                 ) : null;
 
-            $partnerItemsRefileErrorSet = new ModelSet(new RefileRequest());
-
-            $NyplItemsRefileErrorSet = new ModelSet(new RefileRequest());
+            $refileRequestsSet = new ModelSet(new RefileRequest());
+            $refileRequestsSet->setOrderBy('createdDate');
+            $refileRequestsSet->setOrderDirection('DESC');
 
             $partnerItemsFilter = new Filter(
                 'itemBarcode',
@@ -428,24 +428,24 @@ class RefileRequestController extends ServiceController
                 'false'
             );
 
-            $partnerItemsRefileErrorSet->setFilters(array($partnerItemsFilter,$refileSucceededFilter));
+            $partnerItemsError = new Filter\OrFilter(
+              [$partnerItemsFilter, $refileSucceededFilter],
+              'AND'
+            );
 
-            $NyplItemsRefileErrorSet->setFilters(array($NyplItemsFilter,$refileFailedFilter));
+            $NyplItemsError = new Filter\OrFilter(
+              [$NyplItemsFilter, $refileFailedFilter],
+              'AND'
+            );
 
-            // Data sets must be read first to extract data
-            $partnerItemsRefileErrorSet->read();
-            $NyplItemsRefileErrorSet->read();
+            $refileErrors = new Filter\OrFilter(
+                [$partnerItemsError, $NyplItemsError],
+                'OR'
+            );
 
-            $partnerItemsRefileErrorSetData = $partnerItemsRefileErrorSet->getData();
-            $NyplItemsRefileErrorSetData = $NyplItemsRefileErrorSet->getData();
+            APILogger::addDebug('$refileErrors', $refileErrors);
 
-            // Creating union of two data sets
-            $refileRequestsSetData = array_merge($partnerItemsRefileErrorSetData, $NyplItemsRefileErrorSetData);
-
-            $refileRequestsSet = new ModelSet(new RefileRequest());
-            $refileRequestsSet->setData($refileRequestsSetData);
-            $refileRequestsSet->setOrderBy('createdDate');
-            $refileRequestsSet->setOrderDirection('DESC');
+            $refileRequestsSet->addFilter($refileErrors);
 
             return $this->getDefaultReadResponse(
                 $refileRequestsSet,
