@@ -410,6 +410,16 @@ class RefileRequestController extends ServiceController
                 'NOT LIKE'
             );
 
+            $refileSucceededFilter = new Filter(
+                'success',
+                'true'
+            );
+
+            $partnerItemsError = new Filter\OrFilter(
+              [$partnerItemsFilter, $refileSucceededFilter],
+              true
+            );
+
             $NyplItemsFilter = new Filter(
                 'itemBarcode',
                 '33%',
@@ -418,34 +428,18 @@ class RefileRequestController extends ServiceController
                 'LIKE'
             );
 
-            $refileSucceededFilter = new Filter(
-                'success',
-                'true'
-            );
-
             $refileFailedFilter = new Filter(
                 'success',
                 'false'
             );
 
-            $partnerItemsError = new Filter\OrFilter(
-              [$partnerItemsFilter, $refileSucceededFilter],
-              'AND'
-            );
-
             $NyplItemsError = new Filter\OrFilter(
               [$NyplItemsFilter, $refileFailedFilter],
-              'AND'
+              true
             );
 
-            $refileErrors = new Filter\OrFilter(
-                [$partnerItemsError, $NyplItemsError],
-                'OR'
-            );
-
-            APILogger::addDebug('$refileErrors', $refileErrors);
-
-            $refileRequestsSet->addFilter($refileErrors);
+            $refileRequestsSet->addFilter($partnerItemsError);
+            $refileRequestsSet->addFilter($NyplItemsError);
 
             return $this->getDefaultReadResponse(
                 $refileRequestsSet,
@@ -474,7 +468,7 @@ class RefileRequestController extends ServiceController
             )->withStatus(500);
         }
     }
-    
+
     /**
      * @param RefileRequest $refileRequest
      */
