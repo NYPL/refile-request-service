@@ -8,7 +8,7 @@
     }
   ],
   "require": {
-    "nypl/microservice-starter": "dev-debug-refile",
+    "nypl/microservice-starter": "1.2.25",
     "firebase/php-jwt": "4.0.0",
     "ramsey/uuid": "3.6.1",
     "cap60552/php-sip2": "1.0.0"

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e0b0bccb0536f7b39fd8ee24b304eb5d",
+    "content-hash": "e8b05ed95afcd699bbbe005190fe99b4",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -732,16 +732,16 @@
         },
         {
             "name": "nypl/microservice-starter",
-            "version": "dev-debug-refile",
+            "version": "1.2.25",
             "source": {
                 "type": "git",
                 "url": "https://github.com/NYPL/php-microservice-starter.git",
-                "reference": "6e2d062fa63bae221e824ffc495660b20c40a56c"
+                "reference": "77741b5c903de0658b9d943fc449c4e93d614a91"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/NYPL/php-microservice-starter/zipball/6e2d062fa63bae221e824ffc495660b20c40a56c",
-                "reference": "6e2d062fa63bae221e824ffc495660b20c40a56c",
+                "url": "https://api.github.com/repos/NYPL/php-microservice-starter/zipball/77741b5c903de0658b9d943fc449c4e93d614a91",
+                "reference": "77741b5c903de0658b9d943fc449c4e93d614a91",
                 "shasum": ""
             },
             "require": {
@@ -770,10 +770,10 @@
             ],
             "description": "NYPL Microservice Starter",
             "support": {
-                "source": "https://github.com/NYPL/php-microservice-starter/tree/debug-refile",
+                "source": "https://github.com/NYPL/php-microservice-starter/tree/1.2.25",
                 "issues": "https://github.com/NYPL/php-microservice-starter/issues"
             },
-            "time": "2018-08-09T18:34:27+00:00"
+            "time": "2018-08-15T14:28:12+00:00"
         },
         {
             "name": "paragonie/random_compat",
@@ -3383,9 +3383,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "nypl/microservice-starter": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": [],
