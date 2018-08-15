@@ -391,14 +391,17 @@ class RefileRequestController extends ServiceController
     public function getRefileErrors()
     {
         try {
-            $createdDateFilter = $this->getRequest()->getQueryParam('createdDate') ?
-                new Filter(
+            if ($this->getRequest()->getQueryParam('createdDate')) {
+                $createdDateFilter = new Filter(
                     'createdDate',
-                    $this->getRequest()->getQueryParam('createdDate'),
-                    false
-                ) : null;
+                    $this->getRequest()->getQueryParam('createdDate')
+                );
+            } else {
+                $createdDateFilter = null;
+            }
 
             $refileRequestsSet = new ModelSet(new RefileRequest());
+
             $refileRequestsSet->setOrderBy('createdDate');
             $refileRequestsSet->setOrderDirection('DESC');
 
@@ -416,8 +419,8 @@ class RefileRequestController extends ServiceController
             );
 
             $partnerItemsError = new Filter\OrFilter(
-              [$partnerItemsFilter, $refileSucceededFilter],
-              true
+                [$partnerItemsFilter, $refileSucceededFilter, $createdDateFilter],
+                true
             );
 
             $NyplItemsFilter = new Filter(
@@ -434,8 +437,8 @@ class RefileRequestController extends ServiceController
             );
 
             $NyplItemsError = new Filter\OrFilter(
-              [$NyplItemsFilter, $refileFailedFilter],
-              true
+                [$NyplItemsFilter, $refileFailedFilter, $createdDateFilter],
+                true
             );
 
             $refileRequestsSet->addFilter($partnerItemsError);
@@ -443,8 +446,7 @@ class RefileRequestController extends ServiceController
 
             return $this->getDefaultReadResponse(
                 $refileRequestsSet,
-                new RefileRequestResponse(),
-                $createdDateFilter
+                new RefileRequestResponse()
             );
         } catch (RequestException $exception) {
             APILogger::addError('Item Client exception: ' . $exception->getMessage());
