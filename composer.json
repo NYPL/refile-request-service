@@ -1,12 +1,6 @@
 {
   "name": "nypl-refile-request-service",
   "description": "NYPL Refile Request Package",
-  "repositories": [
-    {
-      "type": "vcs",
-      "url": "https://github.com/NYPL/php-microservice-starter"
-    }
-  ],
   "require": {
     "nypl/microservice-starter": "1.2.26",
     "firebase/php-jwt": "4.0.0",
