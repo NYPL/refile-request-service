@@ -14,5 +14,4 @@ class RefileRequestResponse extends SuccessResponse
      * @var RefileRequest
      */
     public $data;
-
 }

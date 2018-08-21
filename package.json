@@ -11,9 +11,9 @@
     "build-production-config": "mkdir -p config && cp ./sample/deployment.env.sample ./config/var_production.env",
     "build-development-sources": "cp ./sample/sample_event_sources.json ./config/event_sources_development.json",
     "build-production-sources": "cp ./sample/sample_event_sources.json ./config/event_sources_production.json",
-    "deploy-development": "./node_modules/.bin/node-lambda deploy -e development -f config/var_development.env -S config/event_sources_development.json -b {subnet} -g {security-groups} -P {profile}",
+    "deploy-development": "./node_modules/.bin/node-lambda deploy -e development -f config/var_development.env -S config/event_sources_development.json -b subnet-f4fe56af -g sg-1d544067 -P nypl-sandbox -o arn:aws:iam::224280085904:role/lambda_basic_execution",
     "deploy-production": "./node_modules/.bin/node-lambda deploy -e production -f config/var_production.env -S config/event_sources_production.json -b {subnet} -g {security-groups} -P {profile}",
-    "local-run": "./node_modules/.bin/node-lambda run -f ./config/local.env -j ./sample/sample_event.json"
+    "local-run": "./node_modules/.bin/node-lambda run -j ./sample/sample_event.json -x ./sample/context.json"
   },
   "repository": {},
   "keywords": [],

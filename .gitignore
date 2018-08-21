@@ -1,18 +1,7 @@
-# Dependency directory
 node_modules
-vendor
-
-# Lambda directory created by node-lambda module
-.lambda
-
-# Logs
-logs
-*.log
-
-# Users Environment Variables
-.lock-wscript
-*.env
-
-# Misc
-.DS_Store
+dist
 *.swp
+config/local.env
+vendor
+build
+.lambda
