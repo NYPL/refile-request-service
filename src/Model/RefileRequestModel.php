@@ -1,10 +1,12 @@
 <?php
 namespace NYPL\Services\Model;
+
 use NYPL\Starter\Model;
+
 /**
- * Class RefileRequest
+ * @SWG\Definition(title="RefileRequestModel", type="object")
  *
- * @package \NYPL\Services\Model
+ * @package NYPL\Services\Model
  */
 class RefileRequestModel extends Model
 {
