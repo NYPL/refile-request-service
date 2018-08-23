@@ -28,6 +28,7 @@ deploy:
   access_key_id: $AWS_ACCESS_KEY_ID_DEVELOPMENT
   secret_access_key: $AWS_SECRET_ACCESS_KEY_DEVELOPMENT
   handler_name: handler
+  runtime: nodejs6.10
   on:
     branch: travis
 - provider: script
