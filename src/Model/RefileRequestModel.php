@@ -17,12 +17,12 @@ class RefileRequestModel extends Model
     public $itemBarcode;
 
     /**
-     * @SWG\Property(example="Item was put on holdshelf."")
+     * @SWG\Property(example="Item was put on holdshelf.")
      * @var string
      */
     public $afMessage;
     /**
-     * @SWG\Property(example="{"fixed":{}, "variable": {}}")
+     * @SWG\Property(example="{fixed:{}, variable: {}}")
      * @var string
      */
     public $sip2Response;

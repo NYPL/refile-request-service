@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a6f2e33418c9ac8adb1337c7c7763d5c",
+    "content-hash": "cf7bb65417aaa6bb2caf73590b339481",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -770,6 +770,10 @@
                 }
             ],
             "description": "NYPL Microservice Starter",
+            "support": {
+                "source": "https://github.com/NYPL/php-microservice-starter/tree/1.2.26",
+                "issues": "https://github.com/NYPL/php-microservice-starter/issues"
+            },
             "time": "2018-08-15T18:49:35+00:00"
         },
         {
