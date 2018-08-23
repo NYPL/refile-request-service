@@ -762,6 +762,7 @@
                     ]
                 }
             },
+            "notification-url": "https://packagist.org/downloads/",
             "authors": [
                 {
                     "name": "Kevin Friedman",
