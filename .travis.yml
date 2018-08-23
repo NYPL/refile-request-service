@@ -18,22 +18,14 @@ after_success:
 - vendor/bin/phpcs -n --standard=PSR1,PSR2 src/
 - vendor/bin/phpcbf src/
 deploy:
-- provider: lambda
-  skip_cleanup: true
-  function_name: RefileRequestService-development
-  region: us-east-1
-  subnet_ids: subnet-f4fe56af
-  security_group_ids: sg-1d544067
-  role: arn:aws:iam::224280085904:role/lambda_basic_execution
-  access_key_id: $AWS_ACCESS_KEY_ID_DEVELOPMENT
-  secret_access_key: $AWS_SECRET_ACCESS_KEY_DEVELOPMENT
-  handler_name: handler
-  runtime: nodejs6.10
-  on:
-    branch: travis
 - provider: script
   skip_cleanup: true
-  script: npm run deploy-production-vpc
+  script: npm run deploy-development
+  on:
+    branch: development
+- provider: script
+  skip_cleanup: true
+  script: npm run deploy-production
   on:
     branch: master
 after_deploy:
