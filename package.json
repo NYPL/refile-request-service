@@ -19,7 +19,7 @@
     "http-string-parser": "^0.0.5"
   },
   "devDependencies": {
-    "node-lambda": "0.11.4",
+    "node-lambda": "0.12.0",
     "phplint": "~1.0.0"
   }
 }
