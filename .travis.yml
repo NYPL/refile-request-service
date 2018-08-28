@@ -25,6 +25,11 @@ deploy:
     branch: development
 - provider: script
   skip_cleanup: true
+  script: npm run deploy-qa
+  on:
+    branch: qa
+- provider: script
+  skip_cleanup: true
   script: npm run deploy-production
   on:
     branch: master
