@@ -6,6 +6,8 @@ use NYPL\Starter\Model\Response\SuccessResponse;
 
 /**
  * @SWG\Definition(title="RefileRequestResponse", type="object")
+ *
+ * @param NYPL\Services\Model\Response
  */
 class RefileRequestResponse extends SuccessResponse
 {
@@ -14,5 +16,4 @@ class RefileRequestResponse extends SuccessResponse
      * @var RefileRequest
      */
     public $data;
-
 }
