@@ -19,6 +19,8 @@ try {
 
     $service->post('/api/v0.1/recap/refile-requests', RefileRequestController::class . ':createRefileRequest');
 
+    $service->post('/api/v0.1/recap/refile-requests-sync', RefileRequestController::class . ':createRefileRequestSync');
+
     $service->get('/api/v0.1/recap/refile-requests', RefileRequestController::class . ':getRefileRequests');
 
     $service->get('/api/v0.1/recap/refile-errors', RefileRequestController::class. ':getRefileErrors');
