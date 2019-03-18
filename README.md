@@ -3,6 +3,8 @@
 [![Build Status](https://travis-ci.org/NYPL/refile-request-service.svg?branch=master)](https://travis-ci.org/NYPL/refile-request-service)
 [![Coverage Status](https://coveralls.io/repos/github/NYPL/refile-request-service/badge.svg?branch=master)](https://coveralls.io/github/NYPL/refile-request-service?branch=master)
 
+See [wiki](https://github.com/NYPL/refile-request-service/wiki) for documentation of purpose and endpoints served. [Additional context can be found here.](https://docs.google.com/document/d/1HtthNU6spmhV8TKCQEDWQ4kQvzdRd3UTfsVCFOLmvMA)
+
 This package is intended to be used as a Lambda-based Hold Request Service using the [NYPL PHP Microservice Starter](https://github.com/NYPL/php-microservice-starter).
 
 This package adheres to [PSR-1](http://www.php-fig.org/psr/psr-1/), [PSR-2](http://www.php-fig.org/psr/psr-2/), and [PSR-4](http://www.php-fig.org/psr/psr-4/) (using the [Composer](https://getcomposer.org/) autoloader).
@@ -90,7 +92,7 @@ Configures Lambda event sources (triggers) specific to each environment.
 
 ### Process a Lambda Event
 
-To use `node-lambda` to process the sample API Gateway event in `event.json`, run:
+Note that to run events locally, you'll first need to create a `config/local.env`. You can then use `node-lambda` to process the sample API Gateway event in `sample/sample_event.json`, as follows:
 
 ~~~~
 npm run local-run
@@ -135,3 +137,11 @@ Ex: docker run -it -p 8888:8888 --rm --name refile-service-container refile-serv
 
 #### Publishing docker image
 ... coming soon
+
+## Tests
+
+To run tests:
+
+```
+./vendor/bin/phpunit --bootstrap vendor/autoload.php
+```

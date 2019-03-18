@@ -56,9 +56,15 @@ class JobService
     }
 
     /**
+     * Set the relevant jobid.
+     *
+     * Note that this is typically used internally, but may be called
+     * externally when an existing jobid should be used - hence scoped
+     * `public` instead of the typical `protected`.
+     *
      * @param string $jobId
      */
-    protected static function setJobId($jobId)
+    public static function setJobId($jobId)
     {
         self::$jobId = $jobId;
     }

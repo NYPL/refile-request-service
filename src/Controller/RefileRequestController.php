@@ -68,9 +68,65 @@ class RefileRequestController extends ServiceController
      */
     public function createRefileRequest()
     {
+        // TODO: Call the -sync function asynchronously:
+        return $this->createRefileRequestSync();
+    }
+
+    /**
+     * @SWG\Post(
+     *     path="/v0.1/recap/refile-requests-sync",
+     *     summary="Create a refile request (synchronous)",
+     *     tags={"recap"},
+     *     operationId="createRefileRequestSync",
+     *     consumes={"application/json"},
+     *     produces={"application/json"},
+     *     @SWG\Parameter(
+     *         name="NewRefileRequest",
+     *         in="body",
+     *         description="Request object based on the included data model",
+     *         required=true,
+     *         @SWG\Schema(ref="#/definitions/NewRefileRequest")
+     *     ),
+     *     @SWG\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @SWG\Schema(ref="#/definitions/RefileRequestResponse")
+     *     ),
+     *     @SWG\Response(
+     *         response="401",
+     *         description="Unauthorized"
+     *     ),
+     *     @SWG\Response(
+     *         response="404",
+     *         description="Not found",
+     *         @SWG\Schema(ref="#/definitions/ErrorResponse")
+     *     ),
+     *     @SWG\Response(
+     *         response="500",
+     *         description="Generic server error",
+     *         @SWG\Schema(ref="#/definitions/ErrorResponse")
+     *     ),
+     *     security={
+     *          {
+     *             "api_auth": {"openid offline_access api write:hold_request readwrite:hold_request"}
+     *          }
+     *     }
+     * )
+     *
+     * @throws APIException
+     * @return Response
+     */
+    public function createRefileRequestSync()
+    {
         try {
             $data = $this->getRequest()->getParsedBody();
-            $data['jobId'] = JobService::generateJobId($this->isUseJobService());
+            if ($data['jobId']) {
+                APILogger::addDebug('Honoring existing jobId for refile request: ' . $data['jobId']);
+                JobService::setJobId($data['jobId']);
+                $data['jobId'] = $data['jobId'];
+            } else {
+                $data['jobId'] = JobService::generateJobId($this->isUseJobService());
+            }
 
             $refileRequest = new RefileRequest($data);
 
