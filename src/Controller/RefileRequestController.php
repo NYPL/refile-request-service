@@ -120,7 +120,7 @@ class RefileRequestController extends ServiceController
     {
         try {
             $data = $this->getRequest()->getParsedBody();
-            if ($data['jobId']) {
+            if (array_key_exists('jobId', $data)) {
                 APILogger::addDebug('Honoring existing jobId for refile request: ' . $data['jobId']);
                 JobService::setJobId($data['jobId']);
                 $data['jobId'] = $data['jobId'];
