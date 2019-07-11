@@ -149,12 +149,10 @@ class RefileRequestController extends ServiceController
 
             APILogger::addDebug('Received item record', $item);
 
-            // Get an instance of our "SIP2Client" class, able to generate
-            // "sip2" clients:
             $sip2Client = new SIP2Client();
 
-            // Perform "ItemInformation" call:
-            $itemInformation = $sip2Client->itemInformation ($item['barcode']);
+            // Perform "ItemInformation" call to check for holds:
+            $itemInformation = $sip2Client->itemInformation($item['barcode']);
 
             // Track status issues for the database for NYPL only.
             $statusFlag = false;
@@ -168,7 +166,8 @@ class RefileRequestController extends ServiceController
 
             // Otherwise, there appear to be no active holds, so do Checkin to clear status:
             } else {
-                $sip2CheckinResult = $sip2Client->checkin ($item);
+                $sip2CheckinResult = $sip2Client->checkin($item);
+
                 $statusFlag = $sip2CheckinResult->statusFlag;
                 $afMessage = $sip2CheckinResult->afMessage;
                 $sip2Response = $sip2CheckinResult->sip2Response;
