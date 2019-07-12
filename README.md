@@ -39,7 +39,7 @@ The effect of running SIP2 Checkin on the above statuses follows:
 | In transit with holds    | Status change to 'On holdshelf'. Avoid! |
 | On holdshelf             | No change                               |
 
-To avoid placing items on holdshelf, the presence of an active item-level hold causes this app to entirely skip the the SIP2 Checkin call and log the incident in the `af_message` column, where it will surface in SCSBuster. The following indicates which item statuses result in a [typically] successful SIP2 Checkin call (✅), and which generate refile errors without attempting any SIP2 Checkin call (🛑):
+To avoid placing items on holdshelf, the presence of an active item-level hold causes this app to entirely skip the the SIP2 Checkin call and log the incident in the `af_message` column, where it will surface in SCSBuster. The following indicates which item statuses result in a [typically] successful SIP2 Checkin call (✅), and which scenarios we're intentionally marking as failed without attempting any SIP2 Checkin call (🛑):
 
 | Name                     | Result of refile endpoint          |
 |--------------------------|------------------------------------|
@@ -50,6 +50,8 @@ To avoid placing items on holdshelf, the presence of an active item-level hold c
 | In transit w/out holds   | ✅ Status change to 'Available'    |
 | In transit with holds    | 🛑 Refile error; No change to item |
 | On holdshelf             | 🛑 Refile error; No change to item |
+
+These issues are discussed to a degree in [the Refile Overview document](https://docs.google.com/document/d/1HtthNU6spmhV8TKCQEDWQ4kQvzdRd3UTfsVCFOLmvMA/edit#). The fact that SIP2 is unable to clear 'ON HOLDSHELF' is noted under "20170818 testing SIP2 Checkin to clear on holdshelf". The behavior whereby SIP2 Checkin causes items with holds to be placed 'ON HOLDSHELF' is not noted.
 
 ## Schema
 ~~~
