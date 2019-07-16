@@ -11,7 +11,47 @@ This package adheres to [PSR-1](http://www.php-fig.org/psr/psr-1/), [PSR-2](http
 
 ## Service Responsibilities
 
-PHP Lambda for handling basic SIP2 refile communications with an Integrated Library System.
+This is a PHP Lambda for serving `/api/v0.1/refile-requests`. A "refile request" is a request to clear the status of an item, typically because it has been reshelved at ReCAP. Refiling changes an item that is checked out or "in transit" to "Available".
+
+Refile is implemented as a SIP2 Checkin call to our ILS. This call generally has the effect of changing an item status to '-' ("Available") regardless of the status, with a few exceptions. The set of statuses we're most interested in are:
+
+| Name                     | Status Code | Has due date? | Item level holds? |
+|--------------------------|-------------|---------------|-------------------|
+| Available w/out holds    | -           | false         | false             |
+| Available with holds     | -           | false         | true              |
+| Checked out w/out holds  | -           | true          | true              |
+| Checked out with holds*  | -           | true          | false             |
+| In transit w/out holds   | t           | false         | false             |
+| In transit with holds*   | t           | false         | true              |
+| On holdshelf             | !           | false         | true              |
+
+\* Note that while it's technically possible to create an item-level hold on an item that is checked out or in transit, it's generally not possible with any public facing interface.
+
+The effect of running SIP2 Checkin on the above statuses follows:
+
+| Name                     | Effect of SIP2 Checkin                  |
+|--------------------------|-----------------------------------------|
+| Available w/out holds    | No change                               |
+| Available with holds     | Status change to 'On holdshelf'. Avoid! |
+| Checked out w/out holds  | Status change to 'Available'            |
+| Checked out with holds   | Status change to 'On holdshelf'. Avoid! |
+| In transit w/out holds   | Status change to 'Available'            |
+| In transit with holds    | Status change to 'On holdshelf'. Avoid! |
+| On holdshelf             | No change                               |
+
+To avoid placing items on holdshelf, the presence of an active item-level hold causes this app to entirely skip the the SIP2 Checkin call and log the incident in the `af_message` column, where it will surface in SCSBuster. The following indicates which item statuses result in a [typically] successful SIP2 Checkin call (✅), and which scenarios we're intentionally marking as failed without attempting any SIP2 Checkin call (🛑):
+
+| Name                     | Result of refile endpoint          |
+|--------------------------|------------------------------------|
+| Available w/out holds    | ✅ No change                       |
+| Available with holds     | 🛑 Refile error; No change to item |
+| Checked out w/out holds  | ✅ Status change to 'Available'    |
+| Checked out with holds   | 🛑 Refile error; No change to item |
+| In transit w/out holds   | ✅ Status change to 'Available'    |
+| In transit with holds    | 🛑 Refile error; No change to item |
+| On holdshelf             | 🛑 Refile error; No change to item |
+
+These issues are discussed to a degree in [the Refile Overview document](https://docs.google.com/document/d/1HtthNU6spmhV8TKCQEDWQ4kQvzdRd3UTfsVCFOLmvMA/edit#). The fact that SIP2 is unable to clear 'ON HOLDSHELF' is noted under "20170818 testing SIP2 Checkin to clear on holdshelf". The behavior whereby SIP2 Checkin causes items with holds to be placed 'ON HOLDSHELF' is not noted.
 
 ## Schema
 ~~~

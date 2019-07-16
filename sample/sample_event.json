@@ -1,5 +1,5 @@
 {
-  "body": "{ \"itemBarcode\": \"33433073119806\" }",
+  "body": "{ \"itemBarcode\": \"33433021998376\" }",
   "resource": "/{proxy+}",
   "path": "/api/v0.1/recap/refile-requests",
   "httpMethod": "POST",

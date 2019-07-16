@@ -149,49 +149,40 @@ class RefileRequestController extends ServiceController
 
             APILogger::addDebug('Received item record', $item);
 
-            APILogger::addDebug(
-                'Sending SIP2 call',
-                [
-                'barcode'      => $item['barcode'],
-                'locationCode' => $item['location']['code']
-                ]
-            );
-
             $sip2Client = new SIP2Client();
 
-            $refileResponse = $sip2Client->getSip2Client()->msgCheckin(
-                $item['barcode'],
-                time(),
-                $item['location']['code']
-            );
-
-            $result = $sip2Client->getSip2Client()->parseCheckinResponse(
-                $sip2Client->getSip2Client()->get_message($refileResponse)
-            );
+            // Perform "ItemInformation" call to check for holds:
+            $itemInformation = $sip2Client->itemInformation($item['barcode']);
 
             // Track status issues for the database for NYPL only.
             $statusFlag = false;
             $afMessage = null;
             $sip2Response = null;
 
-            APILogger::addDebug('Received SIP2 message', $result);
+            // If there are active holds, don't call Checkin
+            if ($itemInformation->holdQueueLength > 0) {
+                // Set custom "afMessage" noting that we're skipping calling msgCheckin.
+                $afMessage = "[Skipping SIP2 Checkin because there are active holds ($itemInformation->holdQueueLength). Circ. status is \"$itemInformation->circulationStatus\"]";
 
-            // A Refile Request is successful when an item is checked in by
-            // the AutomatedCirculation System (ACS), i.e. Ok is set to 1 and
-            // no alerts are triggered because of active holds on the item, i.e. Alert is set to N
-            // Please refer to documentation on SIP2 responses at
-            // https://github.com/NYPL/refile-request-service/wiki/SIP2-Responses
-            if ($result['fixed']['Alert'] == 'N' && $result['fixed']['Ok'] == '1') {
-                $statusFlag = true;
+            // Otherwise, there appear to be no active holds, so do Checkin to clear status:
             } else {
-                // Log a failed SIP2 status change to AVAILABLE without terminating the request prematurely.
-                APILogger::addError('Failed to change status to AVAILABLE.' . ' (itemBarcode: ' . $refileRequest->getItemBarcode() . ')');
-            }
-            if (isset($result['variable']['AF'])) {
-                $afMessage = $result['variable']['AF'];
-            }
-            $sip2Response = json_encode($result);
+                $sip2CheckinResult = $sip2Client->checkin($item);
 
+                $statusFlag = $sip2CheckinResult->statusFlag;
+                $afMessage = $sip2CheckinResult->afMessage;
+                $sip2Response = $sip2CheckinResult->sip2Response;
+            }
+            APILogger::addDebug(
+              "Marking refile-request for item {$item['barcode']} success=" . ($statusFlag ? 'true' : 'false'),
+              [
+                'barcode'       => $item['barcode'],
+                'success'       => $statusFlag,
+                'af_message'    => $afMessage,
+                'sip2_response' => $sip2Response
+              ]
+            );
+
+            // Update refile-request record with result
             $refileRequest->addFilter(new Filter('id', $refileRequest->getId()));
             $refileRequest->read();
             $refileRequest->update(
@@ -461,6 +452,7 @@ class RefileRequestController extends ServiceController
             $refileRequestsSet->setOrderBy('createdDate');
             $refileRequestsSet->setOrderDirection('DESC');
 
+            // Partner items do not match /^33/
             $partnerItemsFilter = new Filter(
                 'itemBarcode',
                 '33%',
@@ -469,16 +461,22 @@ class RefileRequestController extends ServiceController
                 'NOT LIKE'
             );
 
+            // Establish succeeded request filter
             $refileSucceededFilter = new Filter(
                 'success',
                 'true'
             );
 
+            // Partner "error" must match all:
+            //  - look like a partner item (via barcode)
+            //  - have *succeeded*
+            //  - match date filters if any
             $partnerItemsError = new Filter\OrFilter(
                 [$partnerItemsFilter, $refileSucceededFilter, $createdDateFilter],
                 true
             );
 
+            // NYPL items match /^33/
             $NyplItemsFilter = new Filter(
                 'itemBarcode',
                 '33%',
@@ -487,16 +485,22 @@ class RefileRequestController extends ServiceController
                 'LIKE'
             );
 
+            // Establish failed request filter
             $refileFailedFilter = new Filter(
                 'success',
                 'false'
             );
 
+            // NYPL error must match all:
+            //  - look like an NYPL item (via barcode)
+            //  - have failed
+            //  - match date filters if any
             $NyplItemsError = new Filter\OrFilter(
                 [$NyplItemsFilter, $refileFailedFilter, $createdDateFilter],
                 true
             );
 
+            // Because each of these is an OrFilter, they'll be joined by an OR:
             $refileRequestsSet->addFilter($partnerItemsError);
             $refileRequestsSet->addFilter($NyplItemsError);
 
