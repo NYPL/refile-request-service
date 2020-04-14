@@ -1,4 +1,4 @@
-<?php
+<!-- <?php
 namespace NYPL\Test;
 
 use NYPL\Services\SIP2Client;
@@ -35,4 +35,4 @@ class SIP2ClientTest extends TestCase
         $client = new SIP2Client();
         self::assertClassHasAttribute('sip2Client', get_class($client));
     }
-}
+} -->
