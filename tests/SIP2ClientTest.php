@@ -15,7 +15,7 @@ class SIP2ClientTest extends TestCase
 
     public function tearDown()
     {
-        $this->resetConfig('SIP2_HOSTNAME', 'nypl-sierra-test.iii.com');
+        $this->resetConfig('SIP2_HOSTNAME', 'nypl-sierra-test.nypl.org');
     }
 
     public function resetConfig($name, $value)
