@@ -68,9 +68,67 @@ class RefileRequestController extends ServiceController
      */
     public function createRefileRequest()
     {
+        // TODO: Call the -sync function asynchronously:
+        return $this->createRefileRequestSync();
+    }
+
+    /**
+     * @SWG\Post(
+     *     path="/v0.1/recap/refile-requests-sync",
+     *     summary="Create a refile request (synchronous)",
+     *     tags={"recap"},
+     *     operationId="createRefileRequestSync",
+     *     consumes={"application/json"},
+     *     produces={"application/json"},
+     *     @SWG\Parameter(
+     *         name="NewRefileRequest",
+     *         in="body",
+     *         description="Request object based on the included data model",
+     *         required=true,
+     *         @SWG\Schema(ref="#/definitions/NewRefileRequest")
+     *     ),
+     *     @SWG\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @SWG\Schema(ref="#/definitions/RefileRequestResponse")
+     *     ),
+     *     @SWG\Response(
+     *         response="401",
+     *         description="Unauthorized"
+     *     ),
+     *     @SWG\Response(
+     *         response="404",
+     *         description="Not found",
+     *         @SWG\Schema(ref="#/definitions/ErrorResponse")
+     *     ),
+     *     @SWG\Response(
+     *         response="500",
+     *         description="Generic server error",
+     *         @SWG\Schema(ref="#/definitions/ErrorResponse")
+     *     ),
+     *     security={
+     *          {
+     *             "api_auth": {"openid offline_access api write:hold_request readwrite:hold_request"}
+     *          }
+     *     }
+     * )
+     *
+     * @throws APIException
+     * @return Response
+     */
+    public function createRefileRequestSync()
+    {
         try {
+          print "createRefileRequestSync";
             $data = $this->getRequest()->getParsedBody();
-            $data['jobId'] = JobService::generateJobId($this->isUseJobService());
+            print "data is $data";
+            if (array_key_exists('jobId', $data)) {
+                APILogger::addDebug('Honoring existing jobId for refile request: ' . $data['jobId']);
+                JobService::setJobId($data['jobId']);
+                $data['jobId'] = $data['jobId'];
+            } else {
+                $data['jobId'] = JobService::generateJobId($this->isUseJobService());
+            }
 
             $refileRequest = new RefileRequest($data);
 
@@ -85,57 +143,49 @@ class RefileRequestController extends ServiceController
             APILogger::addDebug('Preparing refile request of item barcode ' . $data['itemBarcode']);
 
             $this->sendJobServiceMessages($refileRequest);
-
+            print "Getting Item record";
             APILogger::addDebug('Getting item record');
             $itemClient = new ItemClient();
             $itemResponse = $itemClient->get('items?barcode=' . $data['itemBarcode']);
             $item = json_decode($itemResponse->getBody(), true)['data'][0];
 
             APILogger::addDebug('Received item record', $item);
-
-            APILogger::addDebug(
-                'Sending SIP2 call',
-                [
-                'barcode'      => $item['barcode'],
-                'locationCode' => $item['location']['code']
-                ]
-            );
-
+            print "Received item record";
             $sip2Client = new SIP2Client();
 
-            $refileResponse = $sip2Client->getSip2Client()->msgCheckin(
-                $item['barcode'],
-                time(),
-                $item['location']['code']
-            );
-
-            $result = $sip2Client->getSip2Client()->parseCheckinResponse(
-                $sip2Client->getSip2Client()->get_message($refileResponse)
-            );
-
+            // Perform "ItemInformation" call to check for holds:
+            $itemInformation = $sip2Client->itemInformation($item['barcode']);
+            print "got item information $itemInformation";
             // Track status issues for the database for NYPL only.
             $statusFlag = false;
             $afMessage = null;
             $sip2Response = null;
 
-            APILogger::addDebug('Received SIP2 message', $result);
+            // If there are active holds, don't call Checkin
+            if ($itemInformation->holdQueueLength > 0) {
+                // Set custom "afMessage" noting that we're skipping calling msgCheckin.
+                $afMessage = "[Skipping SIP2 Checkin because there are active holds ($itemInformation->holdQueueLength). Circ. status is \"$itemInformation->circulationStatus\"]";
 
-            // A Refile Request is successful when an item is checked in by
-            // the AutomatedCirculation System (ACS), i.e. Ok is set to 1 and
-            // no alerts are triggered because of active holds on the item, i.e. Alert is set to N
-            // Please refer to documentation on SIP2 responses at
-            // https://github.com/NYPL/refile-request-service/wiki/SIP2-Responses
-            if ($result['fixed']['Alert'] == 'N' && $result['fixed']['Ok'] == '1') {
-                $statusFlag = true;
+            // Otherwise, there appear to be no active holds, so do Checkin to clear status:
             } else {
-                // Log a failed SIP2 status change to AVAILABLE without terminating the request prematurely.
-                APILogger::addError('Failed to change status to AVAILABLE.' . ' (itemBarcode: ' . $refileRequest->getItemBarcode() . ')');
-            }
-            if (isset($result['variable']['AF'])) {
-                $afMessage = $result['variable']['AF'];
-            }
-            $sip2Response = json_encode($result);
+              print "checking in";
+                $sip2CheckinResult = $sip2Client->checkin($item);
 
+                $statusFlag = $sip2CheckinResult->statusFlag;
+                $afMessage = $sip2CheckinResult->afMessage;
+                $sip2Response = $sip2CheckinResult->sip2Response;
+            }
+            APILogger::addDebug(
+              "Marking refile-request for item {$item['barcode']} success=" . ($statusFlag ? 'true' : 'false'),
+              [
+                'barcode'       => $item['barcode'],
+                'success'       => $statusFlag,
+                'af_message'    => $afMessage,
+                'sip2_response' => $sip2Response
+              ]
+            );
+
+            // Update refile-request record with result
             $refileRequest->addFilter(new Filter('id', $refileRequest->getId()));
             $refileRequest->read();
             $refileRequest->update(
@@ -154,6 +204,7 @@ class RefileRequestController extends ServiceController
             );
 
         } catch (RequestException $exception) {
+          print "caught request exception";
             APILogger::addError('Item Client exception: ' . $exception->getMessage());
             return $this->getResponse()->withJson(
                 new ErrorResponse(
@@ -164,6 +215,7 @@ class RefileRequestController extends ServiceController
                 )
             )->withStatus($exception->getCode());
         } catch (\Exception $exception) {
+          print "caught exception";
             APILogger::addError('Refile request failed: ' . $exception->getMessage());
             return $this->getResponse()->withJson(
                 new ErrorResponse(
@@ -405,6 +457,7 @@ class RefileRequestController extends ServiceController
             $refileRequestsSet->setOrderBy('createdDate');
             $refileRequestsSet->setOrderDirection('DESC');
 
+            // Partner items do not match /^33/
             $partnerItemsFilter = new Filter(
                 'itemBarcode',
                 '33%',
@@ -413,16 +466,22 @@ class RefileRequestController extends ServiceController
                 'NOT LIKE'
             );
 
+            // Establish succeeded request filter
             $refileSucceededFilter = new Filter(
                 'success',
                 'true'
             );
 
+            // Partner "error" must match all:
+            //  - look like a partner item (via barcode)
+            //  - have *succeeded*
+            //  - match date filters if any
             $partnerItemsError = new Filter\OrFilter(
                 [$partnerItemsFilter, $refileSucceededFilter, $createdDateFilter],
                 true
             );
 
+            // NYPL items match /^33/
             $NyplItemsFilter = new Filter(
                 'itemBarcode',
                 '33%',
@@ -431,16 +490,22 @@ class RefileRequestController extends ServiceController
                 'LIKE'
             );
 
+            // Establish failed request filter
             $refileFailedFilter = new Filter(
                 'success',
                 'false'
             );
 
+            // NYPL error must match all:
+            //  - look like an NYPL item (via barcode)
+            //  - have failed
+            //  - match date filters if any
             $NyplItemsError = new Filter\OrFilter(
                 [$NyplItemsFilter, $refileFailedFilter, $createdDateFilter],
                 true
             );
 
+            // Because each of these is an OrFilter, they'll be joined by an OR:
             $refileRequestsSet->addFilter($partnerItemsError);
             $refileRequestsSet->addFilter($NyplItemsError);
 
