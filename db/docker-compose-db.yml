@@ -1,0 +1,17 @@
+version: '2'
+services:
+  refile-request-service-db:
+    image: postgres:10.5-alpine
+    container_name: refile-service-postgres-db
+    environment:
+    - POSTGRES_DB=refile_requests
+    - POSTGRES_PASSWORD=localpasswordsimplepassword
+    ports:
+    - '15432:5432'
+    networks:
+      refileservice:
+    volumes:
+    - ./init-test-db.sql:/docker-entrypoint-initdb.d/init.sql
+
+networks:
+  refileservice:
