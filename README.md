@@ -139,7 +139,7 @@ docker-compose -f db/docker-compose-db.yml up -d
 
 Invoke on arbitrary event:
 ```
-sam local invoke --profile nypl-digital-dev -t sam.local.yml -e events/event-checkout-peter-v.json --docker-network host
+sam local invoke --profile nypl-digital-dev -t sam.local.yml -e sample/sample_event.json --docker-network host
 ```
 
 To connect to the local db:
