@@ -14,21 +14,27 @@ Resources:
       Environment:
         Variables:
           API_BASE_URL: https://qa-platform.nypl.org/api/v0.1/
-          DB_CONNECT_STRING: pgsql:host=localhost;dbname=checkout_requests;port=15432
+          DB_CONNECT_STRING: pgsql:host=localhost;dbname=refile_requests;port=35432
           DB_PASSWORD: AQECAHh7ea2tyZ6phZgT4B9BDKwguhlFtRC6hgt+7HbmeFsrsgAAAHkwdwYJKoZIhvcNAQcGoGowaAIBADBjBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDPGaENQWVqPt6yh1uAIBEIA2X1sJ9rt9I2bBysC4UAKitPzNN7OUBGKf2IF45D9xjQVRAYt6LjpSgcwMwVuj8kQN1Eebc9sd
           DB_USERNAME: postgres
           DEFAULT_LOGGING_LEVEL: debug
           IDENTITY_HEADER: X-NYPL-Identity
           JOB_SERVICE_URL: https://qa-platform.nypl.org/api/v0.1/jobs
-          NCIP_URL: AQECAHh7ea2tyZ6phZgT4B9BDKwguhlFtRC6hgt+7HbmeFsrsgAAAJowgZcGCSqGSIb3DQEHBqCBiTCBhgIBADCBgAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAydD8EKFnoYquS7udMCARCAU4bgcPpxw4Jw+5zVNLdFUM8db3eHbyJXcz3WphVnyTWhCFQ/a5Rdf5wUzzLU5fQKlFX5pEmcsjq87sS47rcnky/RdgI0w8OZmFRFDlmEL73wCC6a
-          SCHEMA_BASE_URL: https://qa-platform.nypl.org/api/v0.1/current-schemas
-          SWAGGER_GENERAL_URL: https://qa-platformdocs.nypl.org/docs/checkout-requests
-          SWAGGER_HOST: qa-platformdocs.nypl.org
-          SWAGGER_SCHEME: https
+          OAUTH_CLIENT_ID: AQECAHh7ea2tyZ6phZgT4B9BDKwguhlFtRC6hgt+7HbmeFsrsgAAAHQwcgYJKoZIhvcNAQcGoGUwYwIBADBeBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDBR6S5vFyVbDwMtUYAIBEIAxLwwXfRdgNE/ocKfKL1itSiiC+6n84fvGHtrxIp65t9bqroO1oWW1JGXlXzgI08Vnew==
+          OAUTH_CLIENT_SCOPES: openid
+          OAUTH_CLIENT_SECRET: AQECAHh7ea2tyZ6phZgT4B9BDKwguhlFtRC6hgt+7HbmeFsrsgAAAIcwgYQGCSqGSIb3DQEHBqB3MHUCAQAwcAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAyvMQfXXoTvaZyH3h4CARCAQ9BhNtkLZCXlZNW4+vzkhlTwUm9AUPqxvkDJTspogDoWFaYxnLezOfi101lIxnpPH+Ey4/ERpbCVJ/AjoLP/rpAyff8=
+          OAUTH_TOKEN_URI: https://isso.nypl.org/oauth/token
+          SCHEMA_BASE_URL: http://qa-platformdocs.nypl.org/api/v0.1/current-schemas
+          SIP2_HOSTNAME: nypl-sierra-test.nypl.org
+          SIP2_LOGIN: AQECAHh7ea2tyZ6phZgT4B9BDKwguhlFtRC6hgt+7HbmeFsrsgAAAGYwZAYJKoZIhvcNAQcGoFcwVQIBADBQBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDItGIBVo9NwmtAjANAIBEIAjbwvua8488mA1Y3YTq9AzQg88IW4/F+1jkMflO1z3oBlNzrU=
+          SIP2_PORT: 5550
+          SIP2_TERMINAL_PASSWORD: AQECAHh7ea2tyZ6phZgT4B9BDKwguhlFtRC6hgt+7HbmeFsrsgAAAGYwZAYJKoZIhvcNAQcGoFcwVQIBADBQBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDItGIBVo9NwmtAjANAIBEIAjbwvua8488mA1Y3YTq9AzQg88IW4/F+1jkMflO1z3oBlNzrU=
           TIME_ZONE: America/New_York
           USE_JOB_SERVICE: 1
-          PATRON_BARCODES_70620917062091: AQECAHh7ea2tyZ6phZgT4B9BDKwguhlFtRC6hgt+7HbmeFsrsgAAAIswgYgGCSqGSIb3DQEHBqB7MHkCAQAwdAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAwbALEjj4c6Tb3jeCsCARCAR5hEkYyPm1O57QzG00f+r4qK8YGZMPgrzT9tSXkxx9HlOefPJjq+NaoQm139NpaWrNexYLKZo5ZbrJl+wcmUd5RlkuFOPh6k
-          PATRON_BARCODES_70620957062095: AQECAHh7ea2tyZ6phZgT4B9BDKwguhlFtRC6hgt+7HbmeFsrsgAAAIswgYgGCSqGSIb3DQEHBqB7MHkCAQAwdAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAy3DC0eieYSCA7EpsQCARCAR1wv5lkeUwjpn1bwBYgDLMaLmCbkpGur2ERxY64iBb3gFvdsqXm1kW9aZt0YlMtrXaL9SlpNuoD3II1T/9Z5Pv0p+WHR+h6l
+          SIERRA_BASE_API_URL: https://nypl-sierra-test.nypl.org/iii/sierra-api/v6
+          SIERRA_OAUTH_TOKEN_URI: https://nypl-sierra-test.nypl.org/iii/sierra-api/v6/token
+          SIERRA_OAUTH_CLIENT_ID: AQECAHh7ea2tyZ6phZgT4B9BDKwguhlFtRC6hgt+7HbmeFsrsgAAAHoweAYJKoZIhvcNAQcGoGswaQIBADBkBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDOcLof0wS+XIKrTc+QIBEIA3U0vf8ZaPKeyWsTF9VmuIThYmkQr1UYAvnbkSQVeXf90n+h/3JHk0WwoSPSVK9yG6/WxCzIJPkA==
+          SIERRA_OAUTH_CLIENT_SECRET: AQECAHh7ea2tyZ6phZgT4B9BDKwguhlFtRC6hgt+7HbmeFsrsgAAAGowaAYJKoZIhvcNAQcGoFswWQIBADBUBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDB20W+OqtkHEZQ7jvwIBEIAnZDf6KmlbYbOMmjkiF+Y57XtB0WfjGuAac5e7P88rk850OlHP7Q2y
       Events:
         ApiGetRefileRequestsPath:
           Type: Api

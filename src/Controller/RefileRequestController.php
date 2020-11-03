@@ -4,6 +4,7 @@ namespace NYPL\Services\Controller;
 use GuzzleHttp\Exception\RequestException;
 use NYPL\Services\ItemClient;
 use NYPL\Services\JobService;
+use NYPL\Services\Model\SierraApiRequest\DeleteVirtualRecord;
 use NYPL\Services\Model\RefileRequest\RefileRequest;
 use NYPL\Services\Model\Response\RefileRequestResponse;
 use NYPL\Services\ServiceController;
@@ -119,9 +120,7 @@ class RefileRequestController extends ServiceController
     public function createRefileRequestSync()
     {
         try {
-          print "createRefileRequestSync";
             $data = $this->getRequest()->getParsedBody();
-            print "data is $data";
             if (array_key_exists('jobId', $data)) {
                 APILogger::addDebug('Honoring existing jobId for refile request: ' . $data['jobId']);
                 JobService::setJobId($data['jobId']);
@@ -143,45 +142,33 @@ class RefileRequestController extends ServiceController
             APILogger::addDebug('Preparing refile request of item barcode ' . $data['itemBarcode']);
 
             $this->sendJobServiceMessages($refileRequest);
-            print "Getting Item record";
             APILogger::addDebug('Getting item record');
             $itemClient = new ItemClient();
-            $itemResponse = $itemClient->get('items?barcode=' . $data['itemBarcode']);
-            $item = json_decode($itemResponse->getBody(), true)['data'][0];
+            $itemResponse = $itemClient->get('items?barcode=' . $data['itemBarcode'] . '&nyplSource=sierra-nypl');
+            $items = json_decode($itemResponse->getBody(), true)['data'];
+            APILogger::addDebug("ItemService returned " . count($items) . " items for {$data['itemBarcode']}");
 
-            APILogger::addDebug('Received item record', $item);
-            print "Received item record";
-            $sip2Client = new SIP2Client();
+            // TODO: Need to support multiple potential matches:
+            $item = $items[0];
 
-            // Perform "ItemInformation" call to check for holds:
-            $itemInformation = $sip2Client->itemInformation($item['barcode']);
-            print "got item information $itemInformation";
-            // Track status issues for the database for NYPL only.
-            $statusFlag = false;
-            $afMessage = null;
-            $sip2Response = null;
+            // Can proceed with calling SIP2 checkin on any item without itemType 50
+            // For items with itemType 50, should delete hold (how to look up?), bib, & item
+            $is_virtual_record = $item['fixedFields'] && $item['fixedFields']['61'] && $item['fixedFields']['61']['value'] == '50';
+            APILogger::addDebug('Determined item ' . ($is_virtual_record ? 'is' : 'is not') . ' a virtual record');
 
-            // If there are active holds, don't call Checkin
-            if ($itemInformation->holdQueueLength > 0) {
-                // Set custom "afMessage" noting that we're skipping calling msgCheckin.
-                $afMessage = "[Skipping SIP2 Checkin because there are active holds ($itemInformation->holdQueueLength). Circ. status is \"$itemInformation->circulationStatus\"]";
-
-            // Otherwise, there appear to be no active holds, so do Checkin to clear status:
+            if ($is_virtual_record) {
+              $result = $this->refileVirtualRecord($item);
             } else {
-              print "checking in";
-                $sip2CheckinResult = $sip2Client->checkin($item);
-
-                $statusFlag = $sip2CheckinResult->statusFlag;
-                $afMessage = $sip2CheckinResult->afMessage;
-                $sip2Response = $sip2CheckinResult->sip2Response;
+              $result = $this->refilePermanentRecord($item);
             }
+
             APILogger::addDebug(
-              "Marking refile-request for item {$item['barcode']} success=" . ($statusFlag ? 'true' : 'false'),
+              "Marking refile-request for item {$item['barcode']} success=" . ($result->success ? 'true' : 'false'),
               [
                 'barcode'       => $item['barcode'],
-                'success'       => $statusFlag,
-                'af_message'    => $afMessage,
-                'sip2_response' => $sip2Response
+                'success'       => $result->success,
+                'af_message'    => $result->af_message,
+                'sip2_response' => $result->sip2_response
               ]
             );
 
@@ -190,9 +177,9 @@ class RefileRequestController extends ServiceController
             $refileRequest->read();
             $refileRequest->update(
                 [
-                    'success' => $statusFlag,
-                    'af_message' => $afMessage,
-                    'sip2_response' => $sip2Response
+                    'success' => $result->success,
+                    'af_message' => $result->af_message,
+                    'sip2_response' => $result->sip2_response
                 ]
             );
 
@@ -204,7 +191,6 @@ class RefileRequestController extends ServiceController
             );
 
         } catch (RequestException $exception) {
-          print "caught request exception";
             APILogger::addError('Item Client exception: ' . $exception->getMessage());
             return $this->getResponse()->withJson(
                 new ErrorResponse(
@@ -215,7 +201,6 @@ class RefileRequestController extends ServiceController
                 )
             )->withStatus($exception->getCode());
         } catch (\Exception $exception) {
-          print "caught exception";
             APILogger::addError('Refile request failed: ' . $exception->getMessage());
             return $this->getResponse()->withJson(
                 new ErrorResponse(
@@ -226,6 +211,66 @@ class RefileRequestController extends ServiceController
                 )
             )->withStatus(500);
         }
+    }
+
+    /**
+     *
+     * Refile an item record that is part of our permanent collection (not a virtual record)
+     */
+    function refilePermanentRecord ($item) {
+      $sip2Client = new SIP2Client();
+
+      // Perform "ItemInformation" call to check for holds:
+      $itemInformation = $sip2Client->itemInformation($item['barcode']);
+      APILogger::addDebug('Received item record', $itemInformation);
+      // Track status issues for the database for NYPL only.
+      $statusFlag = false;
+      $afMessage = null;
+      $sip2Response = null;
+
+      // If there are active holds, don't call Checkin
+      if ($itemInformation->holdQueueLength > 0) {
+          // Set custom "afMessage" noting that we're skipping calling msgCheckin.
+          $afMessage = "[Skipping SIP2 Checkin because there are active holds ($itemInformation->holdQueueLength). Circ. status is \"$itemInformation->circulationStatus\"]";
+
+      // Otherwise, there appear to be no active holds, so do Checkin to clear status:
+      } else {
+          $sip2CheckinResult = $sip2Client->checkin($item);
+
+          $statusFlag = $sip2CheckinResult->statusFlag;
+          $afMessage = $sip2CheckinResult->afMessage;
+          $sip2Response = $sip2CheckinResult->sip2Response;
+      }
+
+      $result = new \stdClass();
+      $result->success = $statusFlag;
+      $result->af_message = $afMessage;
+      $result->sip2_response = $sip2Response;
+
+      return $result;
+    }
+
+    /**
+     *
+     * Refile a virtual item record (a temporary bib & item pair created to track lent partner materials)
+     */
+    function refileVirtualRecord ($item) {
+      $result = new \stdClass();
+      $result->success = false;
+      $result->af_message = null;
+      $result->sip2_response = null;
+
+      try {
+        // Use Sierra API to remove any holds and then delete item and bib records:
+        $delete_request = new DeleteVirtualRecord($item['id']);
+        $result->success = true;
+
+      } catch (APIException $exception) {
+        APILogger::addError('Error deleting virtual record: ' . $exception->getMessage());
+        $result->af_message = $exception->getMessage();
+      }
+
+      return $result;
     }
 
     /**

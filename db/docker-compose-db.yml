@@ -7,7 +7,7 @@ services:
     - POSTGRES_DB=refile_requests
     - POSTGRES_PASSWORD=localpasswordsimplepassword
     ports:
-    - '15432:5432'
+    - '35432:5432'
     networks:
       refileservice:
     volumes:

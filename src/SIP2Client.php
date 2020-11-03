@@ -99,6 +99,7 @@ class SIP2Client
 
         $sip2Client = $this->getSip2Client();
 
+        APILogger::addDebug('Checking in item', [ 'barcode' => $item['barcode'], 'location' => $item['location']['code'] ]);
         $sip2RefileRequest = $sip2Client->msgCheckin(
             $item['barcode'],
             time(),
