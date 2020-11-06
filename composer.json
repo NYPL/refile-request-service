@@ -1,5 +1,5 @@
 {
-  "name": "nypl-refile-request-service",
+  "name": "nypl/refile-request-service",
   "description": "NYPL Refile Request Package",
   "require": {
     "nypl/microservice-starter": "1.2.29",
