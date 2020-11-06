@@ -119,7 +119,9 @@ class RefileRequestController extends ServiceController
     public function createRefileRequestSync()
     {
         try {
+          print "createRefileRequestSync";
             $data = $this->getRequest()->getParsedBody();
+            print "data is $data";
             if (array_key_exists('jobId', $data)) {
                 APILogger::addDebug('Honoring existing jobId for refile request: ' . $data['jobId']);
                 JobService::setJobId($data['jobId']);
@@ -141,19 +143,19 @@ class RefileRequestController extends ServiceController
             APILogger::addDebug('Preparing refile request of item barcode ' . $data['itemBarcode']);
 
             $this->sendJobServiceMessages($refileRequest);
-
+            print "Getting Item record";
             APILogger::addDebug('Getting item record');
             $itemClient = new ItemClient();
             $itemResponse = $itemClient->get('items?barcode=' . $data['itemBarcode']);
             $item = json_decode($itemResponse->getBody(), true)['data'][0];
 
             APILogger::addDebug('Received item record', $item);
-
+            print "Received item record";
             $sip2Client = new SIP2Client();
 
             // Perform "ItemInformation" call to check for holds:
             $itemInformation = $sip2Client->itemInformation($item['barcode']);
-
+            print "got item information $itemInformation";
             // Track status issues for the database for NYPL only.
             $statusFlag = false;
             $afMessage = null;
@@ -166,6 +168,7 @@ class RefileRequestController extends ServiceController
 
             // Otherwise, there appear to be no active holds, so do Checkin to clear status:
             } else {
+              print "checking in";
                 $sip2CheckinResult = $sip2Client->checkin($item);
 
                 $statusFlag = $sip2CheckinResult->statusFlag;
@@ -201,6 +204,7 @@ class RefileRequestController extends ServiceController
             );
 
         } catch (RequestException $exception) {
+          print "caught request exception";
             APILogger::addError('Item Client exception: ' . $exception->getMessage());
             return $this->getResponse()->withJson(
                 new ErrorResponse(
@@ -211,6 +215,7 @@ class RefileRequestController extends ServiceController
                 )
             )->withStatus($exception->getCode());
         } catch (\Exception $exception) {
+          print "caught exception";
             APILogger::addError('Refile request failed: ' . $exception->getMessage());
             return $this->getResponse()->withJson(
                 new ErrorResponse(
