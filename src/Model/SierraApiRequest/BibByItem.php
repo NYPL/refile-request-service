@@ -25,7 +25,7 @@ class BibByItem extends SierraBaseRequest
     APILogger::addError('Got data for item: ', $resp);
     $data = json_decode($resp);
 
-    if (!$data || !$data->bibIds) throw new APIException('Received invalid response fetching item ' . $this->item_id);
+    if (!$data || !isset($data->bibIds) || !$data->bibIds) throw new APIException('Received invalid response fetching item ' . $this->item_id);
 
     $this->bib_id = current($data->bibIds);
   }
