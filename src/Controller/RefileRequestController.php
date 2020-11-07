@@ -139,14 +139,16 @@ class RefileRequestController extends ServiceController
 
             $refileRequest->create();
 
-            APILogger::addDebug('Preparing refile request of item barcode ' . $data['itemBarcode']);
+            APILogger::addInfo('Preparing refile request of item barcode ' . $data['itemBarcode'] . ' (jobId ' . $data['jobId'] . ')');
 
             $this->sendJobServiceMessages($refileRequest);
-            APILogger::addDebug('Getting item record');
             $itemClient = new ItemClient();
             $itemResponse = $itemClient->get('items?barcode=' . $data['itemBarcode'] . '&nyplSource=sierra-nypl');
             $items = json_decode($itemResponse->getBody(), true)['data'];
             APILogger::addDebug("ItemService returned " . count($items) . " items for {$data['itemBarcode']}");
+            if (count($items) > 1) {
+              APILogger::addError("ItemService returned multiple (" . count($items) . ") items for {$data['itemBarcode']}!");
+            }
 
             // TODO: Need to support multiple potential matches:
             $item = $items[0];
@@ -162,7 +164,7 @@ class RefileRequestController extends ServiceController
               $result = $this->refilePermanentRecord($item);
             }
 
-            APILogger::addDebug(
+            APILogger::addInfo(
               "Marking refile-request for item {$item['barcode']} success=" . ($result->success ? 'true' : 'false'),
               [
                 'barcode'       => $item['barcode'],
