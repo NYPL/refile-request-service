@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 
 class MockPatronsByItemHold extends PatronsByItemHold {
   protected function sendRequest($path = '', $ignoreNoRecord = false, array $headers = []) {
-    $id = array_pop(explode('/', parse_url($path)['path']));
+    $id = array_pop($parts = explode('/', parse_url($path)['path']));
     return file_get_contents(__DIR__ . '/../Stubs/sierra-patrons-query-by-item-hold-' . $this->item_id . '.json');
   }
 }
