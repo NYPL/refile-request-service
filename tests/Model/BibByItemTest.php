@@ -8,7 +8,8 @@ use PHPUnit\Framework\TestCase;
 
 class MockBibByItem extends BibByItem {
   protected function sendRequest($path = '', $ignoreNoRecord = false, array $headers = []) {
-    $id = array_pop($parts = explode('/', parse_url($path)['path']));
+    $parts = $parts = explode('/', parse_url($path)['path']);
+    $id = array_pop($parts);
     return file_get_contents(__DIR__ . '/../Stubs/sierra-items-' . $id . '.json');
   }
 }
