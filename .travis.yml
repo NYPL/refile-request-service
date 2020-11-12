@@ -11,7 +11,7 @@ cache:
 install:
 - npm install
 script:
-- composer update
+- composer install
 - vendor/bin/phpunit --coverage-clover build/logs/clover.xml
 after_success:
 - vendor/bin/coveralls -v
@@ -23,6 +23,11 @@ deploy:
   script: npm run deploy-development
   on:
     branch: development
+- provider: script
+  skip_cleanup: true
+  script: npm run deploy-qa
+  on:
+    branch: qa
 - provider: script
   skip_cleanup: true
   script: npm run deploy-production

@@ -1,8 +1,7 @@
 {
-  "body": "{ \"itemBarcode\": \"33433021998376\" }",
   "resource": "/{proxy+}",
-  "path": "/api/v0.1/recap/refile-requests",
-  "httpMethod": "POST",
+  "path": "/docs/refile-requests",
+  "httpMethod": "GET",
   "isBase64Encoded": false,
   "queryStringParameters": {
   },

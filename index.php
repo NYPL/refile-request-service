@@ -11,6 +11,8 @@ require __DIR__ . '/vendor/autoload.php';
 try {
     Config::initialize(__DIR__ . '/config');
 
+    print "This is live";
+
     $container = new ServiceContainer();
 
     $service = new Service($container);
@@ -18,6 +20,8 @@ try {
     $service->get('/docs/refile-requests', Swagger::class);
 
     $service->post('/api/v0.1/recap/refile-requests', RefileRequestController::class . ':createRefileRequest');
+
+    $service->post('/api/v0.1/recap/refile-requests-sync', RefileRequestController::class . ':createRefileRequestSync');
 
     $service->get('/api/v0.1/recap/refile-requests', RefileRequestController::class . ':getRefileRequests');
 
