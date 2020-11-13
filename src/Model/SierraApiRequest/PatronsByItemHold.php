@@ -18,6 +18,10 @@ class PatronsByItemHold extends SierraBaseRequest
     $this->fetchData();
   }
 
+  /**
+   * This is the request body that will be posted to the Sierra API to query
+   * patrons having a hold on our item_id
+   */
   private function getBody() {
     return json_encode([
       "target" => [
@@ -41,7 +45,11 @@ class PatronsByItemHold extends SierraBaseRequest
     return 'POST';
   }
 
+  /**
+   * Fetch the patron with a hold on our item
+   */
   private function fetchData() {
+    // Post query:
     $resp = $this->sendRequest($this->getSierraPath());
 
     $data = json_decode($resp);
@@ -50,6 +58,7 @@ class PatronsByItemHold extends SierraBaseRequest
     // If no patrons have hold, return null
     if (count($data->entries) == 0) return;
 
+    // In practice this should not be possible:
     if (count($data->entries) > 1) throw new APIException('Found multiple patrons holding item ' . $this->item_id);
 
     $entry = current($data->entries);

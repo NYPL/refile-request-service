@@ -19,10 +19,12 @@ class BibByItem extends SierraBaseRequest
     return 'GET';
   }
 
+  /**
+   * Fetch bib for item
+   */
   private function fetchData() {
     $resp = $this->sendRequest($this->getSierraPath());
 
-    APILogger::addError('Got data for item: ', $resp);
     $data = json_decode($resp);
 
     if (!$data || !isset($data->bibIds) || !$data->bibIds) throw new APIException('Received invalid response fetching item ' . $this->item_id);

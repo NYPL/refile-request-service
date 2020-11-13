@@ -22,18 +22,22 @@ class PatronHoldByItem extends SierraBaseRequest
     return 'GET';
   }
 
+  /**
+   * Fetch patron holds and determine which hold is associated with our item
+   */
   private function fetchData() {
     $resp = $this->sendRequest($this->getSierraPath());
     APILogger::addDebug('Got patron hold by item data: ', $resp);
 
     $data = json_decode($resp);
-    APILogger::addDebug('Found holds: ', $data);
 
     if (!$data || !$data->entries || !is_array($data->entries)) throw new APIException('Received invalid response fetching patron holds for patron ' . $this->patron_id);
     APILogger::addDebug('Found holds: ', $data->entries);
 
     if (count($data->entries) == 0) throw new APIException('Found no holds for patron ' . $this->patron_id);
 
+    // Among the patron's holds (assumed to be max 15), identify the hold
+    // associated with our item_id
     $matching = array_filter($data->entries, function ($entry) {
       return self::extractIdFromUri($entry->record) === $this->item_id;
     });
