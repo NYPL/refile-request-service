@@ -11,8 +11,6 @@ require __DIR__ . '/vendor/autoload.php';
 try {
     Config::initialize(__DIR__ . '/config');
 
-    print "This is live";
-
     $container = new ServiceContainer();
 
     $service = new Service($container);

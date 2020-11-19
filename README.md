@@ -130,6 +130,23 @@ Configures Lambda event sources (triggers) specific to each environment.
 
 ## Usage
 
+### Local testing with SAM
+
+Start local test postgres db:
+```
+docker-compose -f db/docker-compose-db.yml up -d
+```
+
+Invoke on arbitrary event:
+```
+sam local invoke --profile nypl-digital-dev -t sam.local.yml -e sample/sample_event.json --docker-network host
+```
+
+To connect to the local db:
+```
+docker exec -it refile-service-postgres-db psql -U postgres refile_requests
+```
+
 ### Process a Lambda Event
 
 Note that to run events locally, you'll first need to create a `config/local.env`. You can then use `node-lambda` to process the sample API Gateway event in `sample/sample_event.json`, as follows:
