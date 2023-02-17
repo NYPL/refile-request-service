@@ -3,7 +3,7 @@
   "description": "NYPL Refile Request Package",
   "require": {
     "nypl/microservice-starter": "1.2.29",
-    "firebase/php-jwt": "4.0.0",
+    "firebase/php-jwt": "6.0.0",
     "ramsey/uuid": "3.6.1",
     "cap60552/php-sip2": "1.0.0"
   },
