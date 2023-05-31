@@ -7,14 +7,14 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: index.handler
-      Runtime: nodejs10.x
+      Runtime: nodejs14.x
       Timeout: 30
       Layers:
       - !Ref LibForPhp7Layer
       Environment:
         Variables:
           API_BASE_URL: https://qa-platform.nypl.org/api/v0.1/
-          DB_CONNECT_STRING: pgsql:host=localhost;dbname=refile_requests;port=35432
+          DB_CONNECT_STRING: pgsql:host=host.docker.internal;dbname=refile_requests_local;port=5432
           DB_PASSWORD: AQECAHh7ea2tyZ6phZgT4B9BDKwguhlFtRC6hgt+7HbmeFsrsgAAAHkwdwYJKoZIhvcNAQcGoGowaAIBADBjBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDPGaENQWVqPt6yh1uAIBEIA2X1sJ9rt9I2bBysC4UAKitPzNN7OUBGKf2IF45D9xjQVRAYt6LjpSgcwMwVuj8kQN1Eebc9sd
           DB_USERNAME: postgres
           DEFAULT_LOGGING_LEVEL: debug
@@ -29,6 +29,7 @@ Resources:
           SIP2_LOGIN: AQECAHh7ea2tyZ6phZgT4B9BDKwguhlFtRC6hgt+7HbmeFsrsgAAAGYwZAYJKoZIhvcNAQcGoFcwVQIBADBQBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDItGIBVo9NwmtAjANAIBEIAjbwvua8488mA1Y3YTq9AzQg88IW4/F+1jkMflO1z3oBlNzrU=
           SIP2_PORT: 5550
           SIP2_TERMINAL_PASSWORD: AQECAHh7ea2tyZ6phZgT4B9BDKwguhlFtRC6hgt+7HbmeFsrsgAAAGYwZAYJKoZIhvcNAQcGoFcwVQIBADBQBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDItGIBVo9NwmtAjANAIBEIAjbwvua8488mA1Y3YTq9AzQg88IW4/F+1jkMflO1z3oBlNzrU=
+          SKIP_SIP2: true
           TIME_ZONE: America/New_York
           USE_JOB_SERVICE: 1
           SIERRA_BASE_API_URL: https://nypl-sierra-test.nypl.org/iii/sierra-api/v6

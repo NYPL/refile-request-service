@@ -1,0 +1,36 @@
+version: '3'
+services:
+  web:
+    image: nginx:latest
+    ports:
+    - 8084:80
+    volumes:
+    - .docker/nginx.conf:/etc/nginx/conf.d/nginx.conf
+    - ./:/app
+    depends_on:
+    - php
+  php:
+    build:
+      context: .
+    volumes:
+    - .:/app
+    - /app/vendor
+    env_file: ./config/var_local.env
+    environment:
+    - AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+    - AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+    - AWS_DEFAULT_REGION=us-east-1
+    depends_on:
+    - db
+    links:
+    - db
+  db:
+    image: postgres:11.20-alpine
+    container_name: refile-service-postgres-db
+    environment:
+    - POSTGRES_DB=refile_requests_local
+    - POSTGRES_PASSWORD=localpasswordsimplepassword
+    ports:
+    - '5432:5432'
+    volumes:
+    - ./db/init-test-db.sql:/docker-entrypoint-initdb.d/init.sql

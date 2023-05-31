@@ -5,13 +5,131 @@
 
 See [wiki](https://github.com/NYPL/refile-request-service/wiki) for documentation of purpose and endpoints served. [Additional context can be found here.](https://docs.google.com/document/d/1HtthNU6spmhV8TKCQEDWQ4kQvzdRd3UTfsVCFOLmvMA)
 
-This package is intended to be used as a Lambda-based Hold Request Service using the [NYPL PHP Microservice Starter](https://github.com/NYPL/php-microservice-starter).
+This service provides access to "refiles" (clearing the status of items). It's build with the [NYPL PHP Microservice Starter](https://github.com/NYPL/php-microservice-starter).
 
 This package adheres to [PSR-1](http://www.php-fig.org/psr/psr-1/), [PSR-2](http://www.php-fig.org/psr/psr-2/), and [PSR-4](http://www.php-fig.org/psr/psr-4/) (using the [Composer](https://getcomposer.org/) autoloader).
 
 ## Service Responsibilities
 
 This is a PHP Lambda for serving `/api/v0.1/refile-requests`. A "refile request" is a request to clear the status of an item, typically because it has been reshelved at ReCAP. Refiling changes an item that is checked out or "in transit" to "Available".
+
+See [#sip2-known-issues](SIP2 Known Issues)
+
+## Running Locally
+
+There are two ways to run the app locally.
+
+1. **Running locally with docker-compose** launches the app on a PHP base image connected to a clean local database. This method should be sufficient for most development work.
+2. **Running locally with SAM** launches the app on a Lambda-specific Node base image, making it as close as possible to the deployment environment. This method will usually be overkill, but may be helpful when debugging/developing the Node wrapper.
+
+For both methods, you should add an entry to your `/etc/hosts` with "127.0.0.1 local.nypl.org" if you don't already have one.
+
+Note that, at writing, SIP2 calls to both the Test and Prod Sierra servers are not allowed on/off-site (with/without VPN). Consequently, the app will hang for most requests when running locally. You can enable `SKIP_SIP2` (i.e. either in `sam.local.yml` or `config/var_local.env`) to entirely skip SIP2 calls when running the app locally if doing so doesn't invalidate your testing.
+
+### Running locally with docker-compose
+
+To start the PHP app connected to a fresh local psql database:
+
+```
+  AWS_ACCESS_KEY_ID=... AWS_SECRET_ACCESS_KEY=... docker-compose up
+```
+
+You should supply AWS creds from the `nypl-digital-dev` account so that the app can decrypt config from `./config/var_local.env`
+
+Navigate to http://localnypl.org:8084/api/v0.1/recap/refile-requests
+
+Note that this method should be sufficient for testing local development work, but does not emulate running the app on a Node image as it does when deployed.
+
+Note that because SIP2 connections are blocked from all but AWS infractructure, you can not perform a successful test of the app locally at writing. You can, however, perform a not successful test. To _attempt_ to perform a refile request, POST to `https://local.nypl.org:8084/api/v0.1/recap/refile-requests`:
+```
+{
+  "itemBarcode": "33433073352803"
+}
+```
+
+The process will hang for 30s and then mark the refile-request as failed (viewable at the GET endpoint noted above). You may use the `SKIP_SIP2` env var to slightly improve this testing experience.
+
+### Running locally with SAM
+
+To more fully emulate running the app in Node image:
+
+Start local test postgres db:
+
+```
+docker-compose up -d db
+```
+
+Invoke on arbitrary event:
+```
+sam local invoke --profile nypl-digital-dev -t sam.local.yml -e sample/sample_event.json --docker-network host
+```
+
+To log into the running container:
+```
+docker exec -it refile-request-service_php_1 bash
+```
+
+To connect to the local db:
+```
+docker exec -it refile-service-postgres-db psql -U postgres refile_requests_local
+```
+
+Visit http://local.nypl.org:8084 .
+
+If you need to just build the app image described in the `Dockerfile`:
+```
+docker image build -t refile-request-service:local .
+```
+
+## Configuration
+
+Various files are used to configure and deploy the Lambda.
+
+### .env
+
+`.env` is used by `node-lambda` for deploying to and configuring Lambda in *all* environments. You should use this file to configure the common settings for the Lambda (e.g. timeout, role, etc.) and include AWS credentials to deploy the Lambda. These parameters are ultimately set by the [var environment files](#var_environment) when the Lambda is deployed.
+
+### ./config/var_*environment*.env
+
+Configures environment variables specific to each environment. These are not actually deployed. They are read by `node-lambda` at deploy time to push environmental variables to the app.
+
+./config/var_local.env is a special environment config file in that it isn't used to set the config of any deployed app. It will be used when running the app via `docker-compose`. It should generally match QA config. The `Config` class in microservice-starter will read from this file when it detects it's running locally (which it determines by the _absense_ of a `LAMBDA_TASK_ROOT` env var, which is available in deployed code).
+
+### ./config/event_sources_*environment*.json
+
+Configures Lambda event sources (triggers) specific to each environment. This is used by `node-lambda` at deploy time to configure the app with the right triggers.
+
+## Deployment
+
+This app uses `qa` and `production` deployment branches. On push, Travis CI invokes `npm run deploy-[environment]`, which in turn invokes `node-lambda`.
+
+You may also manually use "manual" versions of the npm commands (see [package.json](package.json), which differ from the primary deploy scripts only in using a named `nypl-digital-dev` AWS profile.
+
+## Tests
+
+To run tests (very little coverage):
+```
+docker image build -t refile-request-service:local --target tests .
+```
+
+Note that test output will be noisy for failures but rather subtle if all tests pass:
+```
+ => [test 1/1] RUN ["./vendor/bin/phpunit", "tests"] .4s
+```
+
+If you have a local PHP 7.1 in your PATH, you can also just run the tests directly:
+
+```
+./vendor/bin/phpunit --bootstrap vendor/autoload.php
+```
+
+## Contributing
+
+This repo uses the [Development-QA-Main Git Workflow](https://github.com/NYPL/engineering-general/blob/master/standards/git-workflow.md#development-qa-main)
+
+## Known issues
+
+### SIP2 Known Issues
 
 Refile is implemented as a SIP2 Checkin call to our ILS. This call generally has the effect of changing an item status to '-' ("Available") regardless of the status, with a few exceptions. The set of statuses we're most interested in are:
 
@@ -52,153 +170,3 @@ To avoid placing items on holdshelf, the presence of an active item-level hold c
 | On holdshelf             | 🛑 Refile error; No change to item |
 
 These issues are discussed to a degree in [the Refile Overview document](https://docs.google.com/document/d/1HtthNU6spmhV8TKCQEDWQ4kQvzdRd3UTfsVCFOLmvMA/edit#). The fact that SIP2 is unable to clear 'ON HOLDSHELF' is noted under "20170818 testing SIP2 Checkin to clear on holdshelf". The behavior whereby SIP2 Checkin causes items with holds to be placed 'ON HOLDSHELF' is not noted.
-
-## Schema
-~~~
-~~~
-
-## Refile Data Model
-
-## ReCAP API RequestItem
-(https://uat-recap.htcinc.com:9093/swagger-ui.html#/)
-
-## Requirements
-
-* Node.js >=6.0
-* PHP >=7.0
-  * [pdo_pdgsql](http://php.net/manual/en/ref.pdo-pgsql.php)
-
-Homebrew is highly recommended for PHP:
-  * `brew install php71`
-  * `brew install php71-pdo-pgsql`
-
-## Installation
-
-1. Clone the repo.
-2. Install required dependencies.
-   * Run `npm install` to install Node.js packages.
-   * Run `composer install` to install PHP packages.
-   * If you have not already installed `node-lambda` as a global package, run `npm install -g node-lambda`.
-3. Setup [configuration](#configuration) files.
-   * Copy the `.env.sample` file to `.env`.
-   * Copy `config/var_qa.env.sample` to `config/var_qa.env` and `config/var_production.env.sample` to `config/var_production.env`.
-
-## Security
-
-Authorization provided via OAuth2 authorization_code. Set scopes in the format of access_type:service.
-For example, read:holds to access the GET request method endpoints.
-
-## Configuration
-
-Various files are used to configure and deploy the Lambda.
-
-### .env
-
-`.env` is used *locally* for two purposes:
-
-1. By `node-lambda` for deploying to and configuring Lambda in *all* environments.
-   * You should use this file to configure the common settings for the Lambda
-   (e.g. timeout, role, etc.) and include AWS credentials to deploy the Lambda.
-2. To set local environment variables so the Lambda can be run and tested in a local environment.
-   These parameters are ultimately set by the [var environment files](#var_environment) when the Lambda is deployed.
-
-Use `npm run build-node-lambda-env` command to generate the proper `./.env`
-
-### package.json
-
-Configures `npm run` deployment commands for each environment and sets the proper AWS Lambda VPC and
-security group.
-
-~~~~
-"scripts": {
-  "deploy-qa": "node-lambda deploy -e qa -f config/deploy_qa.env -S config/event_sources_qa.json -b subnet-<id> -g sg-<id> -p <profile>",
-  "deploy-production": "node-lambda deploy -e production -f config/deploy_production.env -S config/event_sources_production.json -b subnet-<id> -g sg-<id> -p <profile>"
-},
-~~~~
-
-### var_app
-
-Configures environment variables common to *all* environments.
-
-### var_*environment*
-
-Configures environment variables specific to each environment.
-
-### event_sources_*environment*
-
-Configures Lambda event sources (triggers) specific to each environment.
-
-## Usage
-
-### Local testing with SAM
-
-Start local test postgres db:
-```
-docker-compose -f db/docker-compose-db.yml up -d
-```
-
-Invoke on arbitrary event:
-```
-sam local invoke --profile nypl-digital-dev -t sam.local.yml -e sample/sample_event.json --docker-network host
-```
-
-To connect to the local db:
-```
-docker exec -it refile-service-postgres-db psql -U postgres refile_requests
-```
-
-### Process a Lambda Event
-
-Note that to run events locally, you'll first need to create a `config/local.env`. You can then use `node-lambda` to process the sample API Gateway event in `sample/sample_event.json`, as follows:
-
-~~~~
-npm run local-run
-~~~~
-
-### Run as a Web Server
-
-To use the PHP internal web server, run:
-
-~~~~
-php -S localhost:8888 -t . index.php
-~~~~
-
-You can then make a request to the Lambda: `http://localhost:8888/api/v0.1/hold-requests`.
-
-### Swagger Documentation Generator
-
-Create a Swagger route to generate Swagger specification documentation:
-
-~~~~
-$service->get("/docs", SwaggerGenerator::class);
-~~~~
-
-=======
-
-### Docker Integration
-
-To build a docker image run the following command in terminal at the root directory:
-
-~~~~
-docker build -t {NAME_OF_IMAGE} .
-Ex: docker build -t refile-service-image .
-~~~~
-> This will build a docker image installing all PHP dependencies and exporting the 8888 port for public use outside of the container
-
-To run the newly created docker image locally, execute the following command:
-
-~~~~
-docker run -it -p {EXTERNAL_PORT}:8888 --rm --name {NAME_OF_CONTAINER} {NAME_OF_IMAGE_TO_RUN}
-Ex: docker run -it -p 8888:8888 --rm --name refile-service-container refile-service-image
-~~~~
-
-#### Publishing docker image
-... coming soon
-
-## Tests
-
-To run tests:
-
-```
-./vendor/bin/phpunit --bootstrap vendor/autoload.php
-```
