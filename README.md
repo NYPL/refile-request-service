@@ -36,7 +36,7 @@ To start the PHP app connected to a fresh local psql database:
 
 You should supply AWS creds from the `nypl-digital-dev` account so that the app can decrypt config from `./config/var_local.env`
 
-Navigate to http://localnypl.org:8084/api/v0.1/recap/refile-requests
+Navigate to http://local.nypl.org:8084/api/v0.1/recap/refile-requests
 
 Note that this method should be sufficient for testing local development work, but does not emulate running the app on a Node image as it does when deployed.
 
