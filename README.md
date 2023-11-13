@@ -38,7 +38,7 @@ You should supply AWS creds from the `nypl-digital-dev` account so that the app 
 
 Navigate to http://local.nypl.org:8084/api/v0.1/recap/refile-requests
 
-Note that this method should be sufficient for testing local development work, but does not emulate running the app on a Node image as it does when deployed.
+Note that use of docker-compose should be sufficient for testing local application code, but does not emulate running the app on a Node image as it does when deployed. This subtle environment difference should not matter unless something in the Node layer is under examination.
 
 Note that because SIP2 connections are blocked from all but AWS infractructure, you can not perform a successful test of the app locally at writing. You can, however, perform a not successful test. To _attempt_ to perform a refile request, POST to `https://local.nypl.org:8084/api/v0.1/recap/refile-requests`:
 ```
@@ -48,21 +48,6 @@ Note that because SIP2 connections are blocked from all but AWS infractructure, 
 ```
 
 The process will hang for 30s and then mark the refile-request as failed (viewable at the GET endpoint noted above). You may use the `SKIP_SIP2` env var to slightly improve this testing experience.
-
-### Running locally with SAM
-
-To more fully emulate running the app in Node image:
-
-Start local test postgres db:
-
-```
-docker-compose up -d db
-```
-
-Invoke on arbitrary event:
-```
-sam local invoke --profile nypl-digital-dev -t sam.local.yml -e sample/sample_event.json --docker-network host
-```
 
 To log into the running container:
 ```
@@ -74,11 +59,26 @@ To connect to the local db:
 docker exec -it refile-service-postgres-db psql -U postgres refile_requests_local
 ```
 
-Visit http://local.nypl.org:8084 .
-
 If you need to just build the app image described in the `Dockerfile`:
 ```
 docker image build -t refile-request-service:local .
+```
+
+### Running locally with SAM
+
+To more fully emulate running the app in Node image:
+
+Start local test postgres db:
+
+```
+docker-compose up -d db
+```
+
+Edit `sam.local.yml` and change the `DB_CONNECT_STRING` to use your current public IP in place of "YOURIP". In OSX, your public IP is available via `ifconfig -u | grep 'inet ' | grep -v 127.0.0.1 | cut -d\  -f2 | head -1`.
+
+Invoke on arbitrary event:
+```
+sam local invoke --profile nypl-digital-dev -t sam.local.yml -e sample/get-all.json
 ```
 
 ## Configuration
