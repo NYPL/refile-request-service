@@ -74,7 +74,7 @@ Start local test postgres db:
 docker-compose up -d db
 ```
 
-Edit `sam.local.yml` and change the `DB_CONNECT_STRING` to use your current public IP in place of "YOURIP". In OSX, your public IP is available via `ifconfig -u | grep 'inet ' | grep -v 127.0.0.1 | cut -d\  -f2 | head -1`.
+Edit `sam.local.yml` and change the `DB_CONNECT_STRING` to use your current public IP in place of "[YOURIP]". In OSX, your public IP is available via `ifconfig -u | grep 'inet ' | grep -v 127.0.0.1 | cut -d\  -f2 | head -1`.
 
 Invoke on arbitrary event:
 ```
