@@ -21,3 +21,5 @@ ALTER TABLE refile_request ADD COLUMN af_message text;
 ALTER TABLE refile_request ADD COLUMN sip2_response text;
 
 CREATE INDEX idx_created_date ON refile_request(created_date);
+
+INSERT INTO refile_request(job_id, item_barcode, created_date, updated_date, success) VALUES('1234', '123456789', NOW(), NOW(), true);

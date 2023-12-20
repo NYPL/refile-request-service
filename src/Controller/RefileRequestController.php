@@ -11,6 +11,7 @@ use NYPL\Services\ServiceController;
 use NYPL\Services\SIP2Client;
 use NYPL\Starter\APIException;
 use NYPL\Starter\APILogger;
+use NYPL\Starter\Config;
 use NYPL\Starter\Filter;
 use NYPL\Starter\Model\Response\ErrorResponse;
 use NYPL\Starter\ModelSet;
@@ -220,6 +221,15 @@ class RefileRequestController extends ServiceController
      * Refile an item record that is part of our permanent collection (not a virtual record)
      */
     function refilePermanentRecord ($item) {
+      if(Config::get('SKIP_SIP2', false)) {
+          APILogger::addInfo('SKIP_SIP2 is enabled. Skipping SIP2 calls for item ' . $item['barcode']);
+          $result = new \stdClass();
+          $result->success = true;
+          $result->af_message = 'Skipping SIP2';
+          $result->sip2_response = 'Skipping SIP2 for barcode ' . $item['barcode'] . ' because SKIP_SIP2 is enabled';
+          return $result;
+      }
+
       $sip2Client = new SIP2Client();
 
       // Perform "ItemInformation" call to check for holds:
